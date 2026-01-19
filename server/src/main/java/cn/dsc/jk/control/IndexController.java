@@ -9,9 +9,11 @@ import cn.dsc.jk.dto.login.LoginResponse;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.service.CaptchaService;
 import cn.dsc.jk.consts.ValidateResult;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -84,8 +86,7 @@ public class IndexController {
         // 构建响应
         LoginResponse response = new LoginResponse();
         response.setToken(token);
-
-        // TODO 返回权限信息
+        response.setPermissions(CollUtil.newArrayList(userDetail.getAuthorities()));
 
         return Result.success(response);
     }

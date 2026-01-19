@@ -3,9 +3,9 @@ package cn.dsc.jk.dto.user;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
 import lombok.Data;
 
 /**
@@ -37,11 +37,11 @@ public class UserSimpleDetail implements UserDetails {
     /**
      * 授权
      */
-    private List<GrantedAuthority> authorities;
+    private List<GrantedAuthorityPermission> authorities;
 
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<GrantedAuthorityPermission> getAuthorities() {
         return this.authorities;
     }
 

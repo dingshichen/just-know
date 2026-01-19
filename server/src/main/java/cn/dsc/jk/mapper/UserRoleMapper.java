@@ -1,5 +1,6 @@
 package cn.dsc.jk.mapper;
 
+import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
 import cn.dsc.jk.entity.UserRoleRelEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -46,4 +47,12 @@ public interface UserRoleMapper extends BaseMapper<UserRoleRelEntity> {
      * @return 影响行数
      */
     int insertBatch(@Param("userRoles") List<UserRoleRelEntity> userRoles);
+
+    /**
+     * 根据用户ID查询授权权限列表
+     *
+     * @param userId 用户ID
+     * @return 授权权限列表
+     */
+    List<GrantedAuthorityPermission> selectGrantedAuthorityByUserId(@Param("userId") Long userId);
 }

@@ -1,5 +1,8 @@
 package cn.dsc.jk.dto.login;
 
+import java.util.List;
+
+import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
 import lombok.Data;
 
 /**
@@ -11,9 +14,9 @@ import lombok.Data;
 public class LoginResponse {
 
     /**
-     * 当前权限
+     * 权限列表
      */
-    private String currentAuthority;
+    private List<GrantedAuthorityPermission> permissions;
 
     /**
      * JWT token

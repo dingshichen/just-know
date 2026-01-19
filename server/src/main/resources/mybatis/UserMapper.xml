@@ -35,6 +35,14 @@
         updated_time
     </sql>
 
+    <!-- UserSimpleDetail Result Map -->
+    <resultMap id="userSimpleDetailResultMap" type="cn.dsc.jk.dto.user.UserSimpleDetail">
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="account" property="account" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="locked_flag" property="isLockFlag" jdbcType="TINYINT"/>
+    </resultMap>
+
     <!-- Select list with conditions -->
     <select id="selectList" resultMap="baseResultMap">
         SELECT
@@ -58,6 +66,19 @@
             </if>
         </where>
         ORDER BY created_time DESC
+    </select>
+
+    <!-- Select simple detail by account with inner join -->
+    <select id="selectSimpleDetailByAccount" resultMap="userSimpleDetailResultMap">
+        SELECT
+            u.user_id,
+            u.account,
+            uc.password,
+            u.locked_flag
+        FROM user u
+        INNER JOIN user_credential uc ON u.user_id = uc.user_id
+        WHERE u.account = #{account}
+        LIMIT 1
     </select>
 
 </mapper>

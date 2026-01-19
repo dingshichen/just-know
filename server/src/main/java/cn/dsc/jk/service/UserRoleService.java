@@ -1,5 +1,6 @@
 package cn.dsc.jk.service;
 
+import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
 import cn.dsc.jk.entity.UserRoleRelEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -35,4 +36,12 @@ public interface UserRoleService extends IService<UserRoleRelEntity> {
      * @return 是否成功
      */
     boolean deleteByUserId(Long userId);
+
+    /**
+     * 根据用户ID查询授权权限列表
+     *
+     * @param userId 用户ID
+     * @return 授权权限列表
+     */
+    List<GrantedAuthorityPermission> getGrantedAuthorityByUserId(Long userId);
 }

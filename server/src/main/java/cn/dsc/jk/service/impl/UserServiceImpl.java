@@ -1,5 +1,6 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
 import cn.dsc.jk.dto.role.RoleOption;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
@@ -8,12 +9,10 @@ import cn.dsc.jk.dto.user.UserPageQuery;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
 import cn.dsc.jk.entity.RoleEntity;
-import cn.dsc.jk.entity.UserCredentialEntity;
 import cn.dsc.jk.entity.UserEntity;
 import cn.dsc.jk.entity.UserRoleRelEntity;
 import cn.dsc.jk.mapper.UserMapper;
 import cn.dsc.jk.service.RoleService;
-import cn.dsc.jk.service.UserCredentialService;
 import cn.dsc.jk.service.UserRoleService;
 import cn.dsc.jk.service.UserService;
 import cn.hutool.core.collection.CollUtil;
@@ -42,9 +41,6 @@ import java.util.stream.Collectors;
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> implements UserService {
 
     @Autowired
-    private UserCredentialService userCredentialService;
-
-    @Autowired
     private UserRoleService userRoleService;
 
     @Autowired
@@ -52,19 +48,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity entity = this.query().eq("account", username).one();
-        if (entity == null) {
+        UserSimpleDetail detail = this.baseMapper.selectSimpleDetailByAccount(username);
+        if (detail == null) {
             throw new UsernameNotFoundException("用户不存在");
         }
-        UserCredentialEntity userCredential = userCredentialService.getById(entity.getUserId());
-        if (userCredential == null) {
-            throw new UsernameNotFoundException("用户不存在");
-        }
-        UserSimpleDetail detail = new UserSimpleDetail();
-        detail.setUserId(entity.getUserId());
-        detail.setAccount(entity.getAccount());
-        detail.setPassword(userCredential.getPassword());
-        detail.setIsLockFlag(entity.getLockedFlag());
+        List<GrantedAuthorityPermission> permissions = userRoleService.getGrantedAuthorityByUserId(detail.getUserId());
+        detail.setAuthorities(permissions);
         return detail;
     }
 

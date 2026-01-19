@@ -44,4 +44,13 @@
             (#{userRole.userId}, #{userRole.roleId})
         </foreach>
     </insert>
+
+    <!-- Select granted authority by user ID -->
+    <select id="selectGrantedAuthorityByUserId" resultType="cn.dsc.jk.dto.permission.GrantedAuthorityPermission">
+        SELECT p.permission_code
+        FROM user_role_rel ur
+        INNER JOIN role_permission_rel rp ON ur.role_id = rp.role_id
+        INNER JOIN permission p ON rp.permission_id = p.permission_id
+        WHERE ur.user_id = #{userId}
+    </select>
 </mapper>

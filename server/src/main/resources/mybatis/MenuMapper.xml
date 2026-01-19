@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.MenuMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.MenuEntity">
+        <id column="menu_id" property="menuId" jdbcType="BIGINT"/>
+        <result column="menu_name" property="menuName" jdbcType="VARCHAR"/>
+        <result column="menu_type" property="menuType" jdbcType="VARCHAR"/>
+        <result column="menu_file_name" property="menuFileName" jdbcType="VARCHAR"/>
+        <result column="menu_icon" property="menuIcon" jdbcType="VARCHAR"/>
+        <result column="menu_route" property="menuRoute" jdbcType="VARCHAR"/>
+        <result column="permission_id" property="permissionId" jdbcType="BIGINT"/>
+        <result column="parent_menu_id" property="parentMenuId" jdbcType="BIGINT"/>
+        <result column="created_user_id" property="createdUserId" jdbcType="BIGINT"/>
+        <result column="updated_user_id" property="updatedUserId" jdbcType="BIGINT"/>
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
+        <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        menu_id,
+        menu_name,
+        menu_type,
+        menu_file_name,
+        menu_icon,
+        menu_route,
+        permission_id,
+        parent_menu_id,
+        created_user_id,
+        updated_user_id,
+        created_time,
+        updated_time
+    </sql>
+
+    <!-- Select list with conditions -->
+    <select id="selectList" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM menu
+        <where>
+            <if test="menuName != null and menuName != ''">
+                AND menu_name LIKE CONCAT('%', #{menuName}, '%')
+            </if>
+            <if test="menuType != null and menuType != ''">
+                AND menu_type = #{menuType}
+            </if>
+            <if test="parentMenuId != null">
+                AND parent_menu_id = #{parentMenuId}
+            </if>
+        </where>
+        ORDER BY created_time DESC
+    </select>
+
+</mapper>

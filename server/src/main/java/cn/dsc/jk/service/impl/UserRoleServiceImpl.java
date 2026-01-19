@@ -1,5 +1,6 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
 import cn.dsc.jk.entity.UserRoleRelEntity;
 import cn.dsc.jk.mapper.UserRoleMapper;
 import cn.dsc.jk.service.UserRoleService;
@@ -31,5 +32,10 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRoleRel
     @Override
     public boolean deleteByUserId(Long userId) {
         return this.baseMapper.deleteByUserId(userId) > 0;
+    }
+
+    @Override
+    public List<GrantedAuthorityPermission> getGrantedAuthorityByUserId(Long userId) {
+        return this.baseMapper.selectGrantedAuthorityByUserId(userId);
     }
 }

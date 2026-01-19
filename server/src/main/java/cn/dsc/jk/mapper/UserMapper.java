@@ -1,5 +1,6 @@
 package cn.dsc.jk.mapper;
 
+import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.entity.UserEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -30,4 +31,12 @@ public interface UserMapper extends BaseMapper<UserEntity> {
                                 @Param("phone") String phone,
                                 @Param("email") String email,
                                 @Param("lockedFlag") Integer lockedFlag);
+
+    /**
+     * 根据账号查询用户简单详情（包含凭证信息）
+     *
+     * @param account 账号
+     * @return 用户简单详情
+     */
+    UserSimpleDetail selectSimpleDetailByAccount(@Param("account") String account);
 }
