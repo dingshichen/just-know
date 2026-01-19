@@ -1,0 +1,133 @@
+package cn.dsc.jk.control;
+
+import cn.dsc.jk.common.Result;
+import cn.dsc.jk.dto.user.UserCreate;
+import cn.dsc.jk.dto.user.UserDetail;
+import cn.dsc.jk.dto.user.UserItem;
+import cn.dsc.jk.dto.user.UserPageQuery;
+import cn.dsc.jk.dto.user.UserUpdate;
+import cn.dsc.jk.service.UserService;
+import com.github.pagehelper.PageInfo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 用户控制器
+ *
+ * @author ding.shichen
+ */
+@RestController
+@RequestMapping("/user")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    /**
+     * 新增用户
+     *
+     * @param create 新增用户请求
+     * @return 用户ID
+     */
+    @PostMapping
+    public Result<Long> create(@RequestBody UserCreate create) {
+        Long userId = userService.create(create);
+        return Result.success(userId);
+    }
+
+    /**
+     * 修改用户
+     *
+     * @param userId 用户ID
+     * @param update 修改用户请求
+     * @return 操作结果
+     */
+    @PutMapping("/{userId}")
+    public Result<?> update(@PathVariable Long userId, @RequestBody UserUpdate update) {
+        userService.update(userId, update);
+        return Result.success();
+    }
+
+    /**
+     * 删除用户
+     *
+     * @param userId 用户ID
+     */
+    @DeleteMapping("/{userId}")
+    public Result<?> delete(@PathVariable Long userId) {
+        userService.delete(userId);
+        return Result.success();
+    }
+
+    /**
+     * 批量删除用户
+     *
+     * @param userIds 用户ID列表
+     */
+    @DeleteMapping("/batch")
+    public Result<?> deleteBatch(@RequestParam("userIds") List<Long> userIds) {
+        userService.deleteBatch(userIds);
+        return Result.success();
+    }
+
+    /**
+     * 根据ID查询用户详情
+     *
+     * @param userId 用户ID
+     * @return 用户详情
+     */
+    @GetMapping("/{userId}")
+    public Result<UserDetail> load(@PathVariable Long userId) {
+        UserDetail detail = userService.load(userId);
+        return Result.success(detail);
+    }
+
+    /**
+     * 分页查询用户列表
+     *
+     * @param query 查询条件
+     * @return 分页结果
+     */
+    @GetMapping("/page")
+    public Result<PageInfo<UserItem>> page(UserPageQuery query) {
+        PageInfo<UserItem> pageInfo = userService.page(query);
+        return Result.success(pageInfo);
+    }
+
+    /**
+     * 锁定用户
+     *
+     * @param userId 用户ID
+     * @return 操作结果
+     */
+    @PutMapping("/{userId}/lock")
+    public Result<?> lock(@PathVariable Long userId) {
+        userService.lock(userId);
+        return Result.success();
+    }
+
+    /**
+     * 解除锁定用户
+     *
+     * @param userId 用户ID
+     */
+    @PutMapping("/{userId}/unlock")
+    public Result<?> unlock(@PathVariable Long userId) {
+        userService.unlock(userId);
+        return Result.success();
+    }
+
+    /**
+     * 分配角色
+     *
+     * @param userId 用户ID
+     * @param roleIds 角色ID列表
+     */
+    @PutMapping("/{userId}/roles")
+    public Result<?> assignRoles(@PathVariable Long userId, @RequestBody List<Long> roleIds) {
+        userService.assignRoles(userId, roleIds);
+        return Result.success();
+    }
+}

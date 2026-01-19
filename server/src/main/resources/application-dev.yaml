@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3308/just-know?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/just-know?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
     username: root
     password: dingshichen
   data:
@@ -10,3 +10,10 @@ spring:
       port: 6379
       database: 0
       password: dingshichen
+
+# JWT 配置
+jwt:
+  # JWT 密钥
+  secret: KcjnP0kPWkCTy0l_56wRpV8Zw1XOReCzpovndqq0ltA
+  # JWT 过期时间（毫秒），默认 7 天（604800000）
+  expiration: 604800000

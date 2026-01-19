@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.AttachMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.AttachEntity">
+        <id column="attach_id" property="attachId" jdbcType="BIGINT"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="storage_type" property="storageType" jdbcType="VARCHAR"/>
+        <result column="attach_type" property="attachType" jdbcType="VARCHAR"/>
+        <result column="attach_url" property="attachUrl" jdbcType="VARCHAR"/>
+        <result column="attach_key" property="attachKey" jdbcType="VARCHAR"/>
+        <result column="attach_size" property="attachSize" jdbcType="BIGINT"/>
+        <result column="created_user_id" property="createdUserId" jdbcType="BIGINT"/>
+        <result column="updated_user_id" property="updatedUserId" jdbcType="BIGINT"/>
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
+        <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        attach_id,
+        title,
+        storage_type,
+        attach_type,
+        attach_url,
+        attach_key,
+        attach_size,
+        created_user_id,
+        updated_user_id,
+        created_time,
+        updated_time
+    </sql>
+
+    <sql id="Insert_Column_List">
+        title,
+        storage_type,
+        attach_type,
+        attach_url,
+        attach_key,
+        attach_size,
+        created_user_id,
+        updated_user_id
+    </sql>
+
+    <!-- Select list with conditions -->
+    <select id="selectList" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM attach
+        <where>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="storageType != null and storageType != ''">
+                AND storage_type = #{storageType}
+            </if>
+            <if test="attachType != null and attachType != ''">
+                AND attach_type = #{attachType}
+            </if>
+        </where>
+        ORDER BY created_time DESC
+    </select>
+
+    <!-- Insert record -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="attachId">
+        INSERT INTO attach
+        (
+            <include refid="Insert_Column_List"/>
+        )
+        VALUES
+        (
+            #{title},
+            #{storageType},
+            #{attachType},
+            #{attachUrl},
+            #{attachKey},
+            #{attachSize},
+            #{createdUserId},
+            #{updatedUserId}
+        )
+    </insert>
+
+    <!-- Update by primary key -->
+    <update id="updateById">
+        UPDATE attach
+        <set>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="storageType != null and storageType != ''">
+                storage_type = #{storageType},
+            </if>
+            <if test="attachType != null and attachType != ''">
+                attach_type = #{attachType},
+            </if>
+            <if test="attachUrl != null and attachUrl != ''">
+                attach_url = #{attachUrl},
+            </if>
+            <if test="attachKey != null and attachKey != ''">
+                attach_key = #{attachKey},
+            </if>
+            <if test="attachSize != null">
+                attach_size = #{attachSize},
+            </if>
+            <if test="updatedUserId != null">
+                updated_user_id = #{updatedUserId},
+            </if>
+        </set>
+        WHERE attach_id = #{attachId}
+    </update>
+
+    <!-- Delete by primary key -->
+    <delete id="deleteById">
+        DELETE FROM attach
+        WHERE attach_id = #{attachId}
+    </delete>
+
+    <!-- Batch delete -->
+    <delete id="deleteByIds">
+        DELETE FROM attach
+        WHERE attach_id IN
+        <foreach collection="attachIds" item="attachId" open="(" separator="," close=")">
+            #{attachId}
+        </foreach>
+    </delete>
+</mapper>

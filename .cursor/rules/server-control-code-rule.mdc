@@ -1,0 +1,22 @@
+---
+name: server-control-code-rule
+description: This is a rule for controller code
+---
+
+# Overview
+
+- 不允许把数据库 Entity 对象从 controller 直接返回给请求方。
+- 返回给请求方的数据对象，除了 Java 基本类型，自定义类型必须分为三类：
+    - Option 后缀的类，用于 UI 的标签、下拉选项，一般仅包含主键 ID 和名称（标题），该类属性不包含其他自定义类型对象。该类例如： UserOption 里面包含 userId、userName 属性，可以作为 RuleItem 对象的 createUser 属性的类型。
+    - Option 后缀类属性不包含其他关联数据对象。
+    - Item 后缀的类，用于 UI 的表格、列表，一般继承 Option 后缀的类。该类的属性可以包含其他 Option 对象。例如：UserItem 继承 UserOption。
+    - Detail 后缀的类，用户 UI 的详情页展示，可展示表格、列表无法展示的大本文内容的属性，以及组装其他关联数据对象作为其属性，一般继承 Item 后缀的类。该类属性可以包含其他 Option、Item、Detail 对象。例如：UserDetail 继承 UserItem。
+- 返回给请求方的数据对象，都必须 set 在 cn.dsc.jk.common.Result 类的 data 属性中，如 Result<UserDetail>、Result<Page<UserItem>>
+- 使用 Restfull 风格 API。
+- 新增 API 的方法名称使用 create，返回值 Result<Long>，Long 代表主键。
+- 更新 API 的方法名使用 update，返回值 Result<?>，更新的 service 方法没有返回值。
+- 删除 API 的方法名使用 delete，返回 Result<?>，删除的 Service 方法没有返回值。
+- 查询分页列表 API 的方法名使用 page，使用 PageHelper API 实现分页。
+- 查询所有列表 API 的方法名使用 listAll
+- 查询下拉选项的 API 方法名使用 select
+- Controller  API 的入参不允许使用 Entity，避免暴露表结构，请根据 API 分别入参类。如：新增的参数定义为 Create 后缀的类，如新增角色，使用 RoleCreate ，修改角色，使用 RoleUpdate。

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.UserMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.UserEntity">
+        <id column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="avatar_attach_id" property="avatarAttachId" jdbcType="BIGINT"/>
+        <result column="account" property="account" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="locked_flag" property="lockedFlag" jdbcType="TINYINT"/>
+        <result column="created_user_id" property="createdUserId" jdbcType="BIGINT"/>
+        <result column="updated_user_id" property="updatedUserId" jdbcType="BIGINT"/>
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
+        <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        user_id,
+        user_name,
+        avatar_attach_id,
+        account,
+        gender,
+        phone,
+        email,
+        locked_flag,
+        created_user_id,
+        updated_user_id,
+        created_time,
+        updated_time
+    </sql>
+
+    <!-- Select list with conditions -->
+    <select id="selectList" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM user
+        <where>
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="account != null and account != ''">
+                AND account LIKE CONCAT('%', #{account}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
+            </if>
+            <if test="lockedFlag != null">
+                AND locked_flag = #{lockedFlag}
+            </if>
+        </where>
+        ORDER BY created_time DESC
+    </select>
+
+</mapper>
