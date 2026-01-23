@@ -8,6 +8,7 @@
         <id column="role_id" property="roleId" jdbcType="BIGINT"/>
         <result column="role_name" property="roleName" jdbcType="VARCHAR"/>
         <result column="role_code" property="roleCode" jdbcType="VARCHAR"/>
+        <result column="role_desc" property="roleDesc" jdbcType="LONGVARCHAR"/>
         <result column="created_user_id" property="createdUserId" jdbcType="BIGINT"/>
         <result column="updated_user_id" property="updatedUserId" jdbcType="BIGINT"/>
         <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
@@ -19,6 +20,7 @@
         role_id,
         role_name,
         role_code,
+        role_desc,
         created_user_id,
         updated_user_id,
         created_time,

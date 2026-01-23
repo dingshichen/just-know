@@ -20,6 +20,11 @@ public class RoleItem extends RoleOption {
     private String roleCode;
 
     /**
+     * 角色描述
+     */
+    private String roleDesc;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdTime;

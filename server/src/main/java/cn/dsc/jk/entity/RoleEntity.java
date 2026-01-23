@@ -36,6 +36,12 @@ public class RoleEntity {
     private String roleCode;
 
     /**
+     * 角色描述
+     */
+    @TableField("role_desc")
+    private String roleDesc;
+
+    /**
      * 创建用户ID
      */
     @TableField("created_user_id")
