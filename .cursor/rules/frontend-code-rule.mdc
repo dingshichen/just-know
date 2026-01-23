@@ -1,0 +1,7 @@
+---
+name: frontend-code-rule
+description: This is a rule for frontend code
+---
+
+# Overview
+- 修改前端代码时，如果涉及 api 的代码变更，必须要同时更新 mock 代码。
