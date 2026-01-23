@@ -4,4 +4,5 @@ description: This is a rule for frontend code
 ---
 
 # Overview
-- 修改前端代码时，如果涉及 api 的代码变更，必须要同时更新 mock 代码。
+
+- 修改前端代码时，如果涉及调用 api 的代码变更，必须要同时更新 mock 代码。如：新增一个 API，同时要在 mock 代码里也新增一个 mock api；如：修改 API 出入参，同时也要在 mock 代码里也修改 mock api 的出入参
