@@ -20,9 +20,28 @@ export async function outLogin(options?: { [key: string]: any }) {
   });
 }
 
-/** 登录接口 POST /api/login/account */
-export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
+/** 登录接口 POST /api/login/password */
+export async function login(
+  body: {
+    username: string;
+    password: string;
+    /** 图片验证码内容 */
+    captcha: string;
+    /** 后端返回的验证码 ID */
+    captchaId: string;
+    autoLogin?: boolean;
+    type?: string;
+  },
+  options?: { [key: string]: any },
+) {
+  return request<{
+    code: number;
+    msg: string;
+    data?: {
+      token: string;
+      permissions: any[];
+    };
+  }>('/api/login/password', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

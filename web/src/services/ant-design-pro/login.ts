@@ -2,20 +2,18 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 发送验证码 POST /api/login/captcha */
-export async function getFakeCaptcha(
-  params: {
-    // query
-    /** 手机号 */
-    phone?: string;
-  },
-  options?: { [key: string]: any },
-) {
-  return request<API.FakeCaptcha>('/api/login/captcha', {
+/** 获取图形验证码 GET /api/captcha */
+export async function getCaptcha(options?: { [key: string]: any }) {
+  return request<{
+    code: number;
+    msg: string;
+    data?: {
+      captchaId: string;
+      /** 后端返回的 Base64 图片内容 */
+      captchaImage: string;
+    };
+  }>('/api/captcha', {
     method: 'GET',
-    params: {
-      ...params,
-    },
     ...(options || {}),
   });
 }

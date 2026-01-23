@@ -337,9 +337,13 @@ module.exports = {
     current: 1,
   },
   'POST /api/login/outLogin': { data: {}, success: true },
-  'POST /api/login/account': {
-    status: 'ok',
-    type: 'account',
-    currentAuthority: 'admin',
+  // 登录接口 mock，保持与后端 /login/password 返回结构一致
+  'POST /api/login/password': {
+    code: 0,
+    msg: '请求成功',
+    data: {
+      token: 'mock-jwt-token',
+      permissions: [],
+    },
   },
 };
