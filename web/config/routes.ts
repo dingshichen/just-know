@@ -284,6 +284,12 @@ export default [
         path: '/system/attach',
         component: './system/attach',
       },
+      {
+        name: 'config',
+        icon: 'smile',
+        path: '/system/config',
+        component: './system/config',
+      },
     ],
   },
   {
