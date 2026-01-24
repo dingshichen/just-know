@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
 import { Helmet, useModel } from '@umijs/max';
-import { Alert, App, Tabs } from 'antd';
+import { Alert, App, notification, Tabs } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -88,16 +88,24 @@ const Login: React.FC = () => {
   const { styles } = useStyles();
   const { message } = App.useApp();
 
+  const showRequestError = (desc: string) => {
+    notification.error({
+      message: '请求失败',
+      description: desc,
+      placement: 'topRight',
+    });
+  };
+
   const refreshCaptcha = async () => {
     try {
       const res = await getCaptcha({ skipErrorHandler: true });
       if (res.code === 0 && res.data) {
         setCaptchaDetail(res.data);
       } else {
-        message.error(res.msg || '获取验证码失败，请稍后重试');
+        showRequestError(res.msg || '获取验证码失败，请稍后重试');
       }
     } catch (e) {
-      message.error('获取验证码失败，请稍后重试');
+      showRequestError('获取验证码失败，请稍后重试');
     }
   };
 
@@ -121,7 +129,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       if (!captchaDetail.captchaId) {
-        message.error('验证码异常，请刷新重试');
+        showRequestError('验证码异常，请刷新重试');
         await refreshCaptcha();
         return;
       }
@@ -147,7 +155,7 @@ const Login: React.FC = () => {
         return;
       }
       // 登录失败
-      message.error(res.msg || '登录失败，请重试！');
+      showRequestError(res.msg || '登录失败，请重试！');
       setUserLoginState({
         status: 'error',
         type,
@@ -155,7 +163,7 @@ const Login: React.FC = () => {
       await refreshCaptcha();
     } catch (error) {
       console.log(error);
-      message.error('登录失败，请重试！');
+      showRequestError('登录失败，请重试！');
     }
   };
   const { status, type: loginType } = userLoginState;
@@ -205,9 +213,6 @@ const Login: React.FC = () => {
             ]}
           />
 
-          {status === 'error' && loginType === 'account' && (
-            <LoginMessage content="账户或密码错误，请重试" />
-          )}
           {type === 'account' && (
             <>
               <ProFormText
