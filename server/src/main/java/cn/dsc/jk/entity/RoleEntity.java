@@ -1,5 +1,6 @@
 package cn.dsc.jk.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -44,24 +45,24 @@ public class RoleEntity {
     /**
      * 创建用户ID
      */
-    @TableField("created_user_id")
+    @TableField(value = "created_user_id", fill = FieldFill.INSERT)
     private Long createdUserId;
 
     /**
      * 更新用户ID
      */
-    @TableField("updated_user_id")
+    @TableField(value = "updated_user_id", fill = FieldFill.INSERT_UPDATE)
     private Long updatedUserId;
 
     /**
      * 创建时间
      */
-    @TableField("created_time")
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 
     /**
      * 更新时间
      */
-    @TableField("updated_time")
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedTime;
 }

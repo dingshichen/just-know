@@ -27,36 +27,4 @@ public interface AttachMapper extends BaseMapper<AttachEntity> {
     List<AttachEntity> selectList(@Param("title") String title,
                                    @Param("storageType") String storageType,
                                    @Param("attachType") String attachType);
-
-    /**
-     * 插入记录
-     *
-     * @param entity 附件实体
-     * @return 影响行数
-     */
-    int insert(AttachEntity entity);
-
-    /**
-     * 根据主键更新
-     *
-     * @param entity 附件实体
-     * @return 影响行数
-     */
-    int updateById(AttachEntity entity);
-
-    /**
-     * 根据主键删除
-     *
-     * @param attachId 附件ID
-     * @return 影响行数
-     */
-    int deleteById(@Param("attachId") Long attachId);
-
-    /**
-     * 批量删除
-     *
-     * @param attachIds 附件ID列表
-     * @return 影响行数
-     */
-    int deleteByIds(@Param("attachIds") List<Long> attachIds);
 }

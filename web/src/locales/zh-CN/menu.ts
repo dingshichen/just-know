@@ -52,4 +52,5 @@ export default {
   'menu.system': '系统设置',
   'menu.system.role': '角色权限',
   'menu.system.user': '用户管理',
+  'menu.system.attach': '附件管理',
 };

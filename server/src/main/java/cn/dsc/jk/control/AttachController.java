@@ -4,6 +4,7 @@ import cn.dsc.jk.common.Result;
 import cn.dsc.jk.dto.attach.AttachDetail;
 import cn.dsc.jk.dto.attach.AttachItem;
 import cn.dsc.jk.dto.attach.AttachPageQuery;
+import cn.dsc.jk.dto.attach.AttachStats;
 import cn.dsc.jk.service.AttachService;
 import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +83,17 @@ public class AttachController {
     public Result<PageInfo<AttachItem>> page(AttachPageQuery query) {
         PageInfo<AttachItem> pageInfo = attachService.page(query);
         return Result.success(pageInfo);
+    }
+
+    /**
+     * 查询附件统计
+     *
+     * @return 附件总数、今日/本周/本月/本年度上传总数
+     */
+    @GetMapping("/stats")
+    public Result<AttachStats> stats() {
+        AttachStats stats = attachService.stats();
+        return Result.success(stats);
     }
 
     /**

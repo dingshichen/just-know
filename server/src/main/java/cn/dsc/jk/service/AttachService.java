@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import cn.dsc.jk.dto.attach.AttachDetail;
 import cn.dsc.jk.dto.attach.AttachItem;
 import cn.dsc.jk.dto.attach.AttachPageQuery;
+import cn.dsc.jk.dto.attach.AttachStats;
 import cn.dsc.jk.entity.AttachEntity;
 
 import org.springframework.core.io.Resource;
@@ -65,4 +66,11 @@ public interface AttachService extends IService<AttachEntity> {
      * @param attachIds 附件ID列表
      */
     void deleteBatch(List<Long> attachIds);
+
+    /**
+     * 查询附件统计
+     *
+     * @return 附件总数、今日/本周/本月/本年度上传总数
+     */
+    AttachStats stats();
 }

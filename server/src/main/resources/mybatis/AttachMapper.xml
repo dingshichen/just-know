@@ -33,17 +33,6 @@
         updated_time
     </sql>
 
-    <sql id="Insert_Column_List">
-        title,
-        storage_type,
-        attach_type,
-        attach_url,
-        attach_key,
-        attach_size,
-        created_user_id,
-        updated_user_id
-    </sql>
-
     <!-- Select list with conditions -->
     <select id="selectList" resultMap="baseResultMap">
         SELECT
@@ -63,66 +52,4 @@
         ORDER BY created_time DESC
     </select>
 
-    <!-- Insert record -->
-    <insert id="insert" useGeneratedKeys="true" keyProperty="attachId">
-        INSERT INTO attach
-        (
-            <include refid="Insert_Column_List"/>
-        )
-        VALUES
-        (
-            #{title},
-            #{storageType},
-            #{attachType},
-            #{attachUrl},
-            #{attachKey},
-            #{attachSize},
-            #{createdUserId},
-            #{updatedUserId}
-        )
-    </insert>
-
-    <!-- Update by primary key -->
-    <update id="updateById">
-        UPDATE attach
-        <set>
-            <if test="title != null and title != ''">
-                title = #{title},
-            </if>
-            <if test="storageType != null and storageType != ''">
-                storage_type = #{storageType},
-            </if>
-            <if test="attachType != null and attachType != ''">
-                attach_type = #{attachType},
-            </if>
-            <if test="attachUrl != null and attachUrl != ''">
-                attach_url = #{attachUrl},
-            </if>
-            <if test="attachKey != null and attachKey != ''">
-                attach_key = #{attachKey},
-            </if>
-            <if test="attachSize != null">
-                attach_size = #{attachSize},
-            </if>
-            <if test="updatedUserId != null">
-                updated_user_id = #{updatedUserId},
-            </if>
-        </set>
-        WHERE attach_id = #{attachId}
-    </update>
-
-    <!-- Delete by primary key -->
-    <delete id="deleteById">
-        DELETE FROM attach
-        WHERE attach_id = #{attachId}
-    </delete>
-
-    <!-- Batch delete -->
-    <delete id="deleteByIds">
-        DELETE FROM attach
-        WHERE attach_id IN
-        <foreach collection="attachIds" item="attachId" open="(" separator="," close=")">
-            #{attachId}
-        </foreach>
-    </delete>
 </mapper>

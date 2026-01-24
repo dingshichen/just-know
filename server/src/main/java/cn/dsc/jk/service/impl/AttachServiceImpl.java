@@ -4,11 +4,14 @@ import cn.dsc.jk.consts.AttachStorageType;
 import cn.dsc.jk.dto.attach.AttachDetail;
 import cn.dsc.jk.dto.attach.AttachItem;
 import cn.dsc.jk.dto.attach.AttachPageQuery;
+import cn.dsc.jk.dto.attach.AttachStats;
 import cn.dsc.jk.entity.AttachEntity;
 import cn.dsc.jk.exception.BizException;
 import cn.dsc.jk.mapper.AttachMapper;
 import cn.dsc.jk.service.AttachService;
+import cn.hutool.core.util.IdUtil;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -25,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -207,6 +212,29 @@ public class AttachServiceImpl extends ServiceImpl<AttachMapper, AttachEntity> i
         this.removeBatchByIds(attachIds);
     }
 
+    @Override
+    public AttachStats stats() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
+        LocalDateTime startOfWeek = now.toLocalDate().with(DayOfWeek.MONDAY).atStartOfDay();
+        LocalDateTime startOfMonth = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
+        LocalDateTime startOfYear = now.toLocalDate().withDayOfYear(1).atStartOfDay();
+
+        long total = this.count();
+        long todayCount = this.count(new QueryWrapper<AttachEntity>().ge("created_time", startOfToday));
+        long weekCount = this.count(new QueryWrapper<AttachEntity>().ge("created_time", startOfWeek));
+        long monthCount = this.count(new QueryWrapper<AttachEntity>().ge("created_time", startOfMonth));
+        long yearCount = this.count(new QueryWrapper<AttachEntity>().ge("created_time", startOfYear));
+
+        AttachStats stats = new AttachStats();
+        stats.setTotal(total);
+        stats.setTodayCount(todayCount);
+        stats.setWeekCount(weekCount);
+        stats.setMonthCount(monthCount);
+        stats.setYearCount(yearCount);
+        return stats;
+    }
+
     /**
      * 生成附件key
      * 
@@ -214,6 +242,6 @@ public class AttachServiceImpl extends ServiceImpl<AttachMapper, AttachEntity> i
      * @return 附件key
      */
     private String generateAttachKey(String fileExtension) {
-        return UUID.randomUUID().toString().replace("-", "") + fileExtension;
+        return IdUtil.getSnowflakeNextIdStr() + fileExtension;
     }
 }

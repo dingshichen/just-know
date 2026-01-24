@@ -3,6 +3,8 @@ import { SettingDrawer } from '@ant-design/pro-components';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import React from 'react';
+import { UserOutlined } from '@ant-design/icons';
+import { Avatar } from 'antd';
 import {
   AvatarDropdown,
   AvatarName,
@@ -69,9 +71,16 @@ export const layout: RunTimeLayoutConfig = ({
     actionsRender: undefined,
     avatarProps: {
       src: initialState?.currentUser?.avatar,
+      icon: <UserOutlined />,
       title: <AvatarName />,
       render: (_, avatarChildren) => {
-        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
+        const hasAvatar = !!initialState?.currentUser?.avatar;
+        const content = hasAvatar ? (
+          avatarChildren
+        ) : (
+          <Avatar icon={<UserOutlined />} size="default" />
+        );
+        return <AvatarDropdown>{content}</AvatarDropdown>;
       },
     },
     waterMarkProps: {
