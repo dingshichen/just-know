@@ -59,9 +59,9 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/login/**").permitAll()
-                        .requestMatchers("/api/register/**").permitAll()
-                        .requestMatchers("/api/captcha/**").permitAll()
+                        .requestMatchers("/login/password").permitAll()
+                        .requestMatchers("/register").permitAll()
+                        .requestMatchers("/captcha").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

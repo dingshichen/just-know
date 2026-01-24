@@ -35,9 +35,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String uri = request.getRequestURI();
         // 注意：当前项目配置了 spring.mvc.servlet.path=/api，因此这里的 uri 通常以 /api 开头
-        return uri.startsWith("/api/login/")
-                || uri.startsWith("/api/register/")
-                || uri.startsWith("/api/captcha/");
+        return uri.startsWith("/api/login/password")
+                || uri.startsWith("/api/register")
+                || uri.startsWith("/api/captcha");
     }
 
     @Override
