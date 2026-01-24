@@ -1,0 +1,11 @@
+# 请求/响应出入参日志：不打印入参、不打印返回参的 path 集合（支持 Ant 风格，如 /api/attach/download/*）
+jk:
+  logging:
+    # 不打印入参：登录、attach 上传等（防止密码、验证码、文件流等敏感或过大内容泄露）
+    no-print-input-paths:
+      - /api/login/password
+      - /api/attach
+    # 不打印返回参：验证码、attach 下载等（防止验证码图片、文件流等敏感或过大内容泄露）
+    no-print-result-paths:
+      - /api/captcha
+      - /api/attach/download/*

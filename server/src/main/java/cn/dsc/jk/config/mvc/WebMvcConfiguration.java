@@ -1,14 +1,15 @@
 package cn.dsc.jk.config.mvc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author ding.shichen
  */
 @Configuration
+@EnableConfigurationProperties(ServerLoggingProperties.class)
 public class WebMvcConfiguration {
 
     @Bean
@@ -17,7 +18,7 @@ public class WebMvcConfiguration {
     }
 
     @Bean
-    public ServerLoggingFilter serverLoggingFilter(ObjectMapper objectMapper) {
-        return new ServerLoggingFilter(objectMapper);
+    public ServerLoggingFilter serverLoggingFilter(ObjectMapper objectMapper, ServerLoggingProperties loggingProperties) {
+        return new ServerLoggingFilter(objectMapper, loggingProperties);
     }
 }

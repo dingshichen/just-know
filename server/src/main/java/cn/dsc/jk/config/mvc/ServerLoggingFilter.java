@@ -1,5 +1,6 @@
 package cn.dsc.jk.config.mvc;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,13 +15,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
+ * 请求/响应出入参日志过滤，支持通过配置排除敏感或过大的入参/返回参打印。
+ *
  * @author ding.shichen
  */
 @Slf4j
@@ -28,6 +33,9 @@ import java.nio.charset.StandardCharsets;
 public class ServerLoggingFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
+    private final ServerLoggingProperties loggingProperties;
+
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain filterChain) throws ServletException, IOException {
@@ -85,7 +93,7 @@ public class ServerLoggingFilter extends OncePerRequestFilter {
 
     private void afterRequest(long startTime, CachingBufferingRequestWrapper request, ContentCachingResponseWrapper response) {
         long duration = System.currentTimeMillis() - startTime;
-        if (skipPrintResult(response)) {
+        if (skipPrintResult(request, response)) {
             log.info("End | {} | {} | cost : {} ms | status : {}", request.getMethod(), request.getRequestURI(), duration, response.getStatus());
         } else {
             log.info("End | {} | {} | cost : {} ms | status : {} | result : {}", request.getMethod(), request.getRequestURI(), duration, response.getStatus(), toOneLine(new String(response.getContentAsByteArray(), StandardCharsets.UTF_8)));
@@ -108,18 +116,39 @@ public class ServerLoggingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 跳过打印请求参数
+     * 跳过打印请求参数：content-type 为 multipart/octet-stream、或 path 命中 jk.logging.no-print-input-paths
      */
     private boolean skipPrintInput(HttpServletRequest request) {
         String contentType = request.getContentType();
-        return contentType != null && (contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)
-                || contentType.startsWith("application/octet-stream"));
+        if (contentType != null && (contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)
+                || contentType.startsWith("application/octet-stream"))) {
+            return true;
+        }
+        return pathMatches(request.getRequestURI(), loggingProperties.getNoPrintInputPaths());
     }
 
     /**
-     * 跳过打印返回值参数
+     * 跳过打印返回值参数：content-type 为 application/force-download、或 path 命中 jk.logging.no-print-result-paths
      */
-    private boolean skipPrintResult(ContentCachingResponseWrapper response) {
-        return "application/force-download".equals(response.getContentType());
+    private boolean skipPrintResult(HttpServletRequest request, ContentCachingResponseWrapper response) {
+        if ("application/force-download".equals(response.getContentType())) {
+            return true;
+        }
+        return pathMatches(request.getRequestURI(), loggingProperties.getNoPrintResultPaths());
+    }
+
+    /**
+     * 判断 requestURI 是否匹配任一 Ant 风格 pattern
+     */
+    private boolean pathMatches(String requestUri, List<String> patterns) {
+        if (StrUtil.isBlank(requestUri) || CollUtil.isEmpty(patterns)) {
+            return false;
+        }
+        for (String pattern : patterns) {
+            if (StrUtil.isNotBlank(pattern) && PATH_MATCHER.match(pattern.trim(), requestUri)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
