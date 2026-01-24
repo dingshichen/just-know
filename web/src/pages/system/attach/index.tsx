@@ -123,7 +123,7 @@ const UploadModal: FC<UploadModalProps> = ({ open, onClose, onSuccess }) => {
         </Button>,
       ]}
       className={styles.uploadModal}
-      destroyOnClose
+      destroyOnHidden
     >
       <Dragger {...uploadProps}>
         <p className="ant-upload-drag-icon">
@@ -299,7 +299,7 @@ const AttachList: FC = () => {
     <div>
       <PageContainer>
         <div className={styles.standardList}>
-          <Card bordered={false}>
+          <Card variant="borderless">
             <Row gutter={[16, 16]} wrap={false}>
               <Col flex="1">
                 <Info

@@ -247,7 +247,7 @@ const Users: React.FC = () => {
         title="新建用户"
         open={createModalOpen}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => setCreateModalOpen(false),
         }}
         onFinish={async (values) => {
@@ -287,7 +287,7 @@ const Users: React.FC = () => {
           email: currentRow?.email,
         }}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => {
             setEditModalOpen(false);
             setCurrentRow(undefined);

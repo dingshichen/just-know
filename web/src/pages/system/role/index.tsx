@@ -197,7 +197,7 @@ const Roles: React.FC = () => {
         title="新建角色"
         open={createModalOpen}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => setCreateModalOpen(false),
         }}
         onFinish={async (values) => {
@@ -226,7 +226,7 @@ const Roles: React.FC = () => {
           roleDesc: currentRow?.roleDesc,
         }}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => {
             setEditModalOpen(false);
             setCurrentRow(undefined);
