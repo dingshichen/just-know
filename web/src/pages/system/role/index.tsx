@@ -84,11 +84,6 @@ const Roles: React.FC = () => {
 
   const columns: ProColumns<RoleItem>[] = [
     {
-      title: '角色ID',
-      dataIndex: 'roleId',
-      search: false,
-    },
-    {
       title: '角色名称',
       dataIndex: 'roleName',
     },

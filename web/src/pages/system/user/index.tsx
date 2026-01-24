@@ -100,11 +100,6 @@ const Users: React.FC = () => {
 
   const columns: ProColumns<UserItem>[] = [
     {
-      title: '用户ID',
-      dataIndex: 'userId',
-      search: false,
-    },
-    {
       title: '用户姓名',
       dataIndex: 'userName',
     },
