@@ -189,4 +189,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         }
 
     }
+
+    @Override
+    public UserSimpleDetail loadSimpleDetail(Long userId) {
+        UserSimpleDetail detail = this.baseMapper.selectSimpleDetailById(userId);
+        if (detail == null) {
+            return null;
+        }
+        List<GrantedAuthorityPermission> authorities = userRoleService.getGrantedAuthorityByUserId(userId);
+        detail.setAuthorities(authorities);
+        boolean hasAdmin = authorities != null && authorities.stream()
+                .anyMatch(a -> "admin".equals(a.getPermissionCode()));
+        detail.setAccess(hasAdmin ? "admin" : null);
+        return detail;
+    }
 }

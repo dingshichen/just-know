@@ -39,4 +39,12 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @return 用户简单详情
      */
     UserSimpleDetail selectSimpleDetailByAccount(@Param("account") String account);
+
+    /**
+     * 根据用户ID查询用户简单详情（不含密码，用于 /current 等接口）
+     *
+     * @param userId 用户ID
+     * @return 用户简单详情
+     */
+    UserSimpleDetail selectSimpleDetailById(@Param("userId") Long userId);
 }

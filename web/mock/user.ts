@@ -67,7 +67,33 @@ let userIdSeq = mockUsers.length + 1;
 
 // 代码中会兼容本地 service mock 以及部署站点的静态数据
 export default {
-  // 支持值为 Object 和 Array
+  /** 获取当前登录用户，与后端 /api/user/current、UserSimpleDetail 对齐 */
+  'GET /api/user/current': (_req: Request, res: Response) => {
+    if (!getAccess()) {
+      res.status(401).send({
+        code: 1002,
+        msg: '请先登录',
+        data: null,
+      });
+      return;
+    }
+    res.send({
+      code: 0,
+      msg: '请求成功',
+      data: {
+        userName: 'Serati Ma',
+        avatar:
+          'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
+        userId: 1,
+        account: 'admin',
+        isLockFlag: false,
+        authorities: [{ permissionCode: getAccess() || 'user' }],
+        access: getAccess() || undefined,
+      },
+    });
+  },
+
+  // 支持值为 Object 和 Array（保留旧 mock，供未迁移的请求使用）
   'GET /api/currentUser': (_req: Request, res: Response) => {
     if (!getAccess()) {
       res.status(401).send({

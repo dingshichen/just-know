@@ -1,12 +1,15 @@
 package cn.dsc.jk.control;
 
 import cn.dsc.jk.common.Result;
+import cn.dsc.jk.common.ResultCode;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
 import cn.dsc.jk.dto.user.UserItem;
 import cn.dsc.jk.dto.user.UserPageQuery;
+import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
 import cn.dsc.jk.service.UserService;
+import cn.dsc.jk.util.SecurityContextUtil;
 import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +73,21 @@ public class UserController {
     public Result<?> deleteBatch(@RequestParam("userIds") List<Long> userIds) {
         userService.deleteBatch(userIds);
         return Result.success();
+    }
+
+    /**
+     * 获取当前登录用户简单信息
+     *
+     * @return 当前用户的 UserSimpleDetail
+     */
+    @GetMapping("/current")
+    public Result<UserSimpleDetail> current() {
+        Long userId = SecurityContextUtil.getUserId();
+        UserSimpleDetail detail = userService.loadSimpleDetail(userId);
+        if (detail == null) {
+            return Result.error(ResultCode.AUTH_FAIL, "用户不存在");
+        }
+        return Result.success(detail);
     }
 
     /**

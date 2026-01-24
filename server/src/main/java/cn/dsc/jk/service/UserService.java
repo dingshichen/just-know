@@ -4,6 +4,7 @@ import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
 import cn.dsc.jk.dto.user.UserItem;
 import cn.dsc.jk.dto.user.UserPageQuery;
+import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
 import cn.dsc.jk.entity.UserEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -87,4 +88,12 @@ public interface UserService extends IService<UserEntity>, UserDetailsService {
      * @param roleIds 角色ID列表
      */
     void assignRoles(Long userId, List<Long> roleIds);
+
+    /**
+     * 根据用户ID查询简单详情（不含密码，用于当前登录用户等）
+     *
+     * @param userId 用户ID
+     * @return 用户简单详情，不存在时返回 null
+     */
+    UserSimpleDetail loadSimpleDetail(Long userId);
 }

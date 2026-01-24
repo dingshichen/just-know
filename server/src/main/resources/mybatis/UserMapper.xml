@@ -38,6 +38,7 @@
     <!-- UserSimpleDetail Result Map -->
     <resultMap id="userSimpleDetailResultMap" type="cn.dsc.jk.dto.user.UserSimpleDetail">
         <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
         <result column="account" property="account" jdbcType="VARCHAR"/>
         <result column="password" property="password" jdbcType="VARCHAR"/>
         <result column="locked_flag" property="isLockFlag" jdbcType="TINYINT"/>
@@ -72,12 +73,25 @@
     <select id="selectSimpleDetailByAccount" resultMap="userSimpleDetailResultMap">
         SELECT
             u.user_id,
+            u.user_name,
             u.account,
             uc.password,
             u.locked_flag
         FROM user u
         INNER JOIN user_credential uc ON u.user_id = uc.user_id
         WHERE u.account = #{account}
+        LIMIT 1
+    </select>
+
+    <!-- Select simple detail by user id（不含密码，用于 /current 等接口） -->
+    <select id="selectSimpleDetailById" resultMap="userSimpleDetailResultMap">
+        SELECT
+            user_id,
+            user_name,
+            account,
+            locked_flag
+        FROM user
+        WHERE user_id = #{userId}
         LIMIT 1
     </select>
 

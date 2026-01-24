@@ -2,25 +2,21 @@
 /* eslint-disable */
 
 declare namespace API {
+  /** 与后端 UserSimpleDetail 对齐的当前用户类型 */
   type CurrentUser = {
-    name?: string;
+    /** 用户姓名 */
+    userName?: string;
     avatar?: string;
-    userid?: string;
-    email?: string;
-    signature?: string;
-    title?: string;
-    group?: string;
-    tags?: { key?: string; label?: string }[];
-    notifyCount?: number;
-    unreadCount?: number;
-    country?: string;
+    /** 用户ID */
+    userId?: number;
+    /** 用户账号 */
+    account?: string;
+    /** 是否锁定 */
+    isLockFlag?: boolean;
+    /** 权限列表 */
+    authorities?: { permissionCode?: string }[];
+    /** 访问级别，如 admin，用于前端权限判断 */
     access?: string;
-    geographic?: {
-      province?: { label?: string; key?: string };
-      city?: { label?: string; key?: string };
-    };
-    address?: string;
-    phone?: string;
   };
 
   type LoginResult = {
