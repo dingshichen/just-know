@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.DeptMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.DeptEntity">
+        <id column="dept_id" property="deptId" jdbcType="BIGINT"/>
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+        <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+        <result column="dept_desc" property="deptDesc" jdbcType="LONGVARCHAR"/>
+        <result column="parent_dept_id" property="parentDeptId" jdbcType="BIGINT"/>
+        <result column="sort_no" property="sortNo" jdbcType="INTEGER"/>
+        <result column="created_user_id" property="createdUserId" jdbcType="BIGINT"/>
+        <result column="updated_user_id" property="updatedUserId" jdbcType="BIGINT"/>
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
+        <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        dept_id,
+        dept_name,
+        dept_code,
+        dept_desc,
+        parent_dept_id,
+        sort_no,
+        created_user_id,
+        updated_user_id,
+        created_time,
+        updated_time
+    </sql>
+
+    <!-- Select list with conditions -->
+    <select id="selectList" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dept
+        <where>
+            <if test="deptName != null and deptName != ''">
+                AND dept_name LIKE CONCAT('%', #{deptName}, '%')
+            </if>
+            <if test="deptCode != null and deptCode != ''">
+                AND dept_code LIKE CONCAT('%', #{deptCode}, '%')
+            </if>
+            <if test="parentDeptId != null">
+                AND parent_dept_id = #{parentDeptId}
+            </if>
+        </where>
+        ORDER BY sort_no ASC, created_time DESC
+    </select>
+
+    <!-- Select all -->
+    <select id="selectAll" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dept
+        ORDER BY sort_no ASC, created_time DESC
+    </select>
+
+    <!-- Select by parent dept ID -->
+    <select id="selectByParentDeptId" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM dept
+        WHERE parent_dept_id = #{parentDeptId}
+        ORDER BY sort_no ASC, created_time DESC
+    </select>
+
+</mapper>

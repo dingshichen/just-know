@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用户列表项DTO（用于UI表格、列表）
@@ -38,6 +39,11 @@ public class UserItem extends UserOption {
      * 锁定标志：0-正常，1-锁定
      */
     private Integer lockedFlag;
+
+    /**
+     * 部门名称列表
+     */
+    private List<String> deptNames;
 
     /**
      * 创建时间

@@ -12,9 +12,13 @@ import cn.dsc.jk.entity.RoleEntity;
 import cn.dsc.jk.entity.UserEntity;
 import cn.dsc.jk.entity.UserRoleRelEntity;
 import cn.dsc.jk.mapper.UserMapper;
+import cn.dsc.jk.service.DeptService;
 import cn.dsc.jk.service.RoleService;
+import cn.dsc.jk.service.UserDeptService;
 import cn.dsc.jk.service.UserRoleService;
 import cn.dsc.jk.service.UserService;
+import cn.dsc.jk.entity.DeptEntity;
+import cn.dsc.jk.entity.UserDeptRelEntity;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -46,6 +50,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Autowired
     private RoleService roleService;
 
+    @Autowired
+    private UserDeptService userDeptService;
+
+    @Autowired
+    private DeptService deptService;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserSimpleDetail detail = this.baseMapper.selectSimpleDetailByAccount(username);
@@ -66,6 +76,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             entity.setLockedFlag(false);
         }
         this.save(entity);
+        
+        // 处理部门关联
+        if (CollUtil.isNotEmpty(create.getDeptIds())) {
+            List<UserDeptRelEntity> userDepts = create.getDeptIds().stream().map(deptId -> {
+                UserDeptRelEntity userDept = new UserDeptRelEntity();
+                userDept.setUserId(entity.getUserId());
+                userDept.setDeptId(deptId);
+                return userDept;
+            }).collect(Collectors.toList());
+            userDeptService.saveBatch(userDepts);
+        }
+        
         return entity.getUserId();
     }
 
@@ -76,6 +98,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         entity.setUserId(userId);
         BeanUtils.copyProperties(update, entity);
         this.updateById(entity);
+        
+        // 处理部门关联：先删除原有关系，再插入新关系
+        userDeptService.deleteByUserId(userId);
+        if (CollUtil.isNotEmpty(update.getDeptIds())) {
+            List<UserDeptRelEntity> userDepts = update.getDeptIds().stream().map(deptId -> {
+                UserDeptRelEntity userDept = new UserDeptRelEntity();
+                userDept.setUserId(userId);
+                userDept.setDeptId(deptId);
+                return userDept;
+            }).collect(Collectors.toList());
+            userDeptService.saveBatch(userDepts);
+        }
     }
 
     @Override
@@ -83,6 +117,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     public void delete(Long userId) {
         // 删除用户角色关系
         userRoleService.deleteByUserId(userId);
+        // 删除用户部门关系
+        userDeptService.deleteByUserId(userId);
         // 删除用户
         this.removeById(userId);
     }
@@ -96,6 +132,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         // 批量删除用户角色关系
         for (Long userId : userIds) {
             userRoleService.deleteByUserId(userId);
+        }
+        // 批量删除用户部门关系
+        for (Long userId : userIds) {
+            userDeptService.deleteByUserId(userId);
         }
         // 批量删除用户
         this.removeBatchByIds(userIds);
@@ -126,6 +166,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             detail.setRoles(new ArrayList<>());
         }
 
+        // 加载用户部门信息
+        List<Long> deptIds = userDeptService.getDeptIdsByUserId(userId);
+        detail.setDeptIds(deptIds != null ? deptIds : new ArrayList<>());
+        if (CollUtil.isNotEmpty(deptIds)) {
+            List<DeptEntity> deptEntities = deptService.listByIds(deptIds);
+            List<String> deptNames = deptEntities.stream()
+                    .map(DeptEntity::getDeptName)
+                    .collect(Collectors.toList());
+            detail.setDeptNames(deptNames);
+        } else {
+            detail.setDeptNames(new ArrayList<>());
+        }
+
         return detail;
     }
 
@@ -143,6 +196,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         List<UserItem> items = entities.stream().map(entity -> {
             UserItem item = new UserItem();
             BeanUtils.copyProperties(entity, item);
+            
+            // 填充部门信息
+            List<Long> deptIds = userDeptService.getDeptIdsByUserId(entity.getUserId());
+            if (CollUtil.isNotEmpty(deptIds)) {
+                List<DeptEntity> deptEntities = deptService.listByIds(deptIds);
+                List<String> deptNames = deptEntities.stream()
+                        .map(DeptEntity::getDeptName)
+                        .collect(Collectors.toList());
+                item.setDeptNames(deptNames);
+            } else {
+                item.setDeptNames(new ArrayList<>());
+            }
+            
             return item;
         }).collect(Collectors.toList());
 

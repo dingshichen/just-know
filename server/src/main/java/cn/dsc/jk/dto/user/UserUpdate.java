@@ -2,6 +2,8 @@ package cn.dsc.jk.dto.user;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 修改用户请求DTO
  *
@@ -39,4 +41,9 @@ public class UserUpdate {
      * 电子邮箱
      */
     private String email;
+
+    /**
+     * 部门ID列表
+     */
+    private List<Long> deptIds;
 }

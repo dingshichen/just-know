@@ -5,20 +5,23 @@ import {
   PageContainer,
   ProFormSelect,
   ProFormText,
+  ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
 import { Button, message, Popconfirm, Tag } from 'antd';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { UserForm, UserItem, UserPageParams } from '@/services/ant-design-pro/user';
 import {
   batchDeleteUsers,
   createUser,
   deleteUser,
+  getUserDeptIds,
   lockUser,
   pageUsers,
   unlockUser,
   updateUser,
 } from '@/services/ant-design-pro/user';
+import { listDeptTree, type DeptItem } from '@/services/ant-design-pro/dept';
 
 const Users: React.FC = () => {
   const actionRef = useRef<ActionType>();
@@ -26,6 +29,53 @@ const Users: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<UserItem | undefined>();
   const [selectedRows, setSelectedRows] = useState<UserItem[]>([]);
+  const [deptTree, setDeptTree] = useState<DeptItem[]>([]);
+  const [editDeptIds, setEditDeptIds] = useState<number[]>([]);
+
+  // 加载部门树形数据
+  useEffect(() => {
+    const loadDeptTree = async () => {
+      try {
+        const res = await listDeptTree();
+        if (res.code === 0 && res.data) {
+          setDeptTree(res.data);
+        }
+      } catch (e) {
+        console.error('加载部门树失败', e);
+      }
+    };
+    loadDeptTree();
+  }, []);
+
+  // 将部门树转换为TreeSelect需要的格式
+  const convertDeptTreeToOptions = (tree: DeptItem[]): any[] => {
+    return tree.map((item) => ({
+      title: item.deptName,
+      value: item.deptId,
+      key: item.deptId,
+      children: item.children ? convertDeptTreeToOptions(item.children) : undefined,
+    }));
+  };
+
+  // 加载编辑用户的部门信息
+  useEffect(() => {
+    const loadUserDepts = async () => {
+      if (editModalOpen && currentRow?.userId) {
+        try {
+          const res = await getUserDeptIds(currentRow.userId);
+          if (res.code === 0 && res.data) {
+            setEditDeptIds(res.data);
+          }
+        } catch (e) {
+          console.error('加载用户部门失败', e);
+          setEditDeptIds([]);
+        }
+      } else {
+        setEditDeptIds([]);
+      }
+    };
+    loadUserDepts();
+  }, [editModalOpen, currentRow?.userId]);
 
   const handleSubmit = async (values: UserForm, isEdit: boolean) => {
     const hide = message.loading(isEdit ? '正在保存用户信息' : '正在新增用户');
@@ -123,6 +173,21 @@ const Users: React.FC = () => {
     {
       title: '电子邮箱',
       dataIndex: 'email',
+    },
+    {
+      title: '部门',
+      dataIndex: 'deptNames',
+      search: false,
+      render: (_, record) => {
+        if (record.deptNames && record.deptNames.length > 0) {
+          return record.deptNames.map((name, index) => (
+            <Tag key={index} style={{ marginRight: 4 }}>
+              {name}
+            </Tag>
+          ));
+        }
+        return '-';
+      },
     },
     {
       title: '锁定状态',
@@ -269,6 +334,18 @@ const Users: React.FC = () => {
         />
         <ProFormText name="phone" label="手机号码" />
         <ProFormText name="email" label="电子邮箱" />
+        <ProFormTreeSelect
+          name="deptIds"
+          label="部门"
+          placeholder="请选择部门"
+          fieldProps={{
+            multiple: true,
+            treeData: convertDeptTreeToOptions(deptTree),
+            treeCheckable: true,
+            showCheckedStrategy: 'SHOW_ALL',
+            allowClear: true,
+          }}
+        />
       </ModalForm>
 
       <ModalForm<UserForm>
@@ -280,12 +357,14 @@ const Users: React.FC = () => {
           gender: currentRow?.gender,
           phone: currentRow?.phone,
           email: currentRow?.email,
+          deptIds: editDeptIds,
         }}
         modalProps={{
           destroyOnHidden: true,
           onCancel: () => {
             setEditModalOpen(false);
             setCurrentRow(undefined);
+            setEditDeptIds([]);
           },
         }}
         onFinish={async (values) => {
@@ -312,6 +391,18 @@ const Users: React.FC = () => {
         />
         <ProFormText name="phone" label="手机号码" />
         <ProFormText name="email" label="电子邮箱" />
+        <ProFormTreeSelect
+          name="deptIds"
+          label="部门"
+          placeholder="请选择部门"
+          fieldProps={{
+            multiple: true,
+            treeData: convertDeptTreeToOptions(deptTree),
+            treeCheckable: true,
+            showCheckedStrategy: 'SHOW_ALL',
+            allowClear: true,
+          }}
+        />
       </ModalForm>
     </PageContainer>
   );

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.UserDeptMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.UserDeptRelEntity">
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="dept_id" property="deptId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        user_id,
+        dept_id
+    </sql>
+
+    <!-- Select dept IDs by user ID -->
+    <select id="selectDeptIdsByUserId" resultType="java.lang.Long">
+        SELECT dept_id
+        FROM user_dept_rel
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- Select user IDs by dept ID -->
+    <select id="selectUserIdsByDeptId" resultType="java.lang.Long">
+        SELECT user_id
+        FROM user_dept_rel
+        WHERE dept_id = #{deptId}
+    </select>
+
+    <!-- Delete by user ID -->
+    <delete id="deleteByUserId">
+        DELETE FROM user_dept_rel
+        WHERE user_id = #{userId}
+    </delete>
+
+    <!-- Delete by dept ID -->
+    <delete id="deleteByDeptId">
+        DELETE FROM user_dept_rel
+        WHERE dept_id = #{deptId}
+    </delete>
+
+    <!-- Batch insert -->
+    <insert id="insertBatch">
+        INSERT INTO user_dept_rel
+        (user_id, dept_id)
+        VALUES
+        <foreach collection="userDepts" item="userDept" separator=",">
+            (#{userDept.userId}, #{userDept.deptId})
+        </foreach>
+    </insert>
+</mapper>

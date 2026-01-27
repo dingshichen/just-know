@@ -8,6 +8,7 @@ import cn.dsc.jk.dto.user.UserItem;
 import cn.dsc.jk.dto.user.UserPageQuery;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
+import cn.dsc.jk.service.UserDeptService;
 import cn.dsc.jk.service.UserService;
 import cn.dsc.jk.util.SecurityContextUtil;
 import com.github.pagehelper.PageInfo;
@@ -27,6 +28,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserDeptService userDeptService;
 
     /**
      * 新增用户
@@ -147,5 +149,17 @@ public class UserController {
     public Result<?> assignRoles(@PathVariable Long userId, @RequestBody List<Long> roleIds) {
         userService.assignRoles(userId, roleIds);
         return Result.success();
+    }
+
+    /**
+     * 获取用户部门ID列表（用于编辑时回显）
+     *
+     * @param userId 用户ID
+     * @return 部门ID列表
+     */
+    @GetMapping("/{userId}/depts")
+    public Result<List<Long>> getUserDeptIds(@PathVariable Long userId) {
+        List<Long> deptIds = userDeptService.getDeptIdsByUserId(userId);
+        return Result.success(deptIds != null ? deptIds : new java.util.ArrayList<>());
     }
 }

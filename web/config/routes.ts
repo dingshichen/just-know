@@ -290,6 +290,12 @@ export default [
         path: '/system/config',
         component: './system/config',
       },
+      {
+        name: 'dept',
+        icon: 'smile',
+        path: '/system/dept',
+        component: './system/dept',
+      },
     ],
   },
   {

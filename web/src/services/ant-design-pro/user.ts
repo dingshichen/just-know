@@ -14,6 +14,7 @@ export type UserItem = {
   phone?: string;
   email?: string;
   lockedFlag?: number;
+  deptNames?: string[];
   createdTime?: string;
   updatedTime?: string;
 };
@@ -70,6 +71,7 @@ export type UserForm = {
   phone?: string;
   email?: string;
   avatarAttachId?: number;
+  deptIds?: number[];
 };
 
 export async function createUser(body: UserForm) {
@@ -130,6 +132,35 @@ export async function lockUser(userId: number) {
 export async function unlockUser(userId: number) {
   return request<Result<void>>(`/api/user/${userId}/unlock`, {
     method: 'PUT',
+  });
+}
+
+/**
+ * 获取用户详情
+ * GET /api/user/{userId}
+ */
+export async function getUserDetail(userId: number) {
+  return request<Result<{
+    userId: number;
+    userName: string;
+    account?: string;
+    gender?: string;
+    phone?: string;
+    email?: string;
+    deptIds?: number[];
+    deptNames?: string[];
+  }>>(`/api/user/${userId}`, {
+    method: 'GET',
+  });
+}
+
+/**
+ * 获取用户部门ID列表
+ * GET /api/user/{userId}/depts
+ */
+export async function getUserDeptIds(userId: number) {
+  return request<Result<number[]>>(`/api/user/${userId}/depts`, {
+    method: 'GET',
   });
 }
 
