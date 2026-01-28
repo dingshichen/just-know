@@ -36,5 +36,5 @@ public class UserPageQuery extends PageQuery {
     /**
      * 锁定标志：0-正常，1-锁定
      */
-    private Integer lockedFlag;
+    private Boolean lockedFlag;
 }

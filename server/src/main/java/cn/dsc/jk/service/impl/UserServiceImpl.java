@@ -185,13 +185,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Override
     public PageInfo<UserItem> page(UserPageQuery query) {
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<UserEntity> entities = this.baseMapper.selectList(
-                query.getUserName(),
-                query.getAccount(),
-                query.getPhone(),
-                query.getEmail(),
-                query.getLockedFlag()
-        );
+        List<UserEntity> entities = this.baseMapper.selectList(query);
 
         List<UserItem> items = entities.stream().map(entity -> {
             UserItem item = new UserItem();

@@ -13,7 +13,7 @@ export type UserItem = {
   gender?: string;
   phone?: string;
   email?: string;
-  lockedFlag?: number;
+  lockedFlag?: boolean;
   deptNames?: string[];
   createdTime?: string;
   updatedTime?: string;
@@ -30,7 +30,7 @@ export type UserPageParams = {
   account?: string;
   phone?: string;
   email?: string;
-  lockedFlag?: number;
+  lockedFlag?: boolean;
 };
 
 /**
