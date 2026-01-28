@@ -3,9 +3,12 @@ package cn.dsc.jk.service;
 import cn.dsc.jk.dto.role.RoleCreate;
 import cn.dsc.jk.dto.role.RoleDetail;
 import cn.dsc.jk.dto.role.RoleItem;
+import cn.dsc.jk.dto.role.RoleOption;
 import cn.dsc.jk.dto.role.RolePageQuery;
 import cn.dsc.jk.dto.role.RoleUpdate;
 import cn.dsc.jk.entity.RoleEntity;
+import cn.dsc.jk.service.base.BaseOptionService;
+
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.pagehelper.PageInfo;
 
@@ -16,7 +19,7 @@ import java.util.List;
  *
  * @author ding.shichen
  */
-public interface RoleService extends IService<RoleEntity> {
+public interface RoleService extends IService<RoleEntity>, BaseOptionService<RoleOption> {
 
     /**
      * 新增角色

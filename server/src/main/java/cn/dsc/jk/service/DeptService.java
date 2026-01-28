@@ -4,8 +4,10 @@ import cn.dsc.jk.dto.dept.DeptCreate;
 import cn.dsc.jk.dto.dept.DeptDetail;
 import cn.dsc.jk.dto.dept.DeptItem;
 import cn.dsc.jk.dto.dept.DeptPageQuery;
+import cn.dsc.jk.dto.dept.DeptOption;
 import cn.dsc.jk.dto.dept.DeptUpdate;
 import cn.dsc.jk.entity.DeptEntity;
+import cn.dsc.jk.service.base.BaseOptionService;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.pagehelper.PageInfo;
 
@@ -16,7 +18,7 @@ import java.util.List;
  *
  * @author ding.shichen
  */
-public interface DeptService extends IService<DeptEntity> {
+public interface DeptService extends IService<DeptEntity>, BaseOptionService<DeptOption> {
 
     /**
      * 新增机构

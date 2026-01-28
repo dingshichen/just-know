@@ -40,14 +40,4 @@ public class UserDetail extends UserItem {
      */
     private List<RoleOption> roles;
 
-    /**
-     * 部门ID列表
-     */
-    private List<Long> deptIds;
-
-    /**
-     * 部门名称列表
-     */
-    private List<String> deptNames;
-
 }

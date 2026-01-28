@@ -8,7 +8,7 @@ import cn.dsc.jk.dto.user.UserItem;
 import cn.dsc.jk.dto.user.UserPageQuery;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
-import cn.dsc.jk.service.UserDeptService;
+import cn.dsc.jk.service.UserDeptRelService;
 import cn.dsc.jk.service.UserService;
 import cn.dsc.jk.util.SecurityContextUtil;
 import com.github.pagehelper.PageInfo;
@@ -28,7 +28,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final UserDeptService userDeptService;
+    private final UserDeptRelService userDeptService;
 
     /**
      * 新增用户

@@ -6,6 +6,9 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import cn.dsc.jk.dto.dept.DeptOption;
+import cn.dsc.jk.dto.role.RoleOption;
+
 /**
  * 用户列表项DTO（用于UI表格、列表）
  *
@@ -41,9 +44,14 @@ public class UserItem extends UserOption {
     private Integer lockedFlag;
 
     /**
-     * 部门名称列表
+     * 角色列表
      */
-    private List<String> deptNames;
+    private List<RoleOption> roles;
+
+    /**
+     * 部门列表
+     */
+    private List<DeptOption> depts;
 
     /**
      * 创建时间

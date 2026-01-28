@@ -1,20 +1,23 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
+import type { DeptItem } from './dept';
+import type { RoleItem } from './role';
 
 /**
  * 用户列表项
  * 对应后端的 UserItem DTO
  */
 export type UserItem = {
-  userId: number;
+  userId: string;
   userName: string;
   account?: string;
   gender?: string;
   phone?: string;
   email?: string;
   lockedFlag?: boolean;
-  deptNames?: string[];
+  roles?: RoleItem[];
+  depts?: DeptItem[];
   createdTime?: string;
   updatedTime?: string;
 };
@@ -70,12 +73,12 @@ export type UserForm = {
   gender?: string;
   phone?: string;
   email?: string;
-  avatarAttachId?: number;
-  deptIds?: number[];
+  avatarAttachId?: string;
+  deptIds?: string[];
 };
 
 export async function createUser(body: UserForm) {
-  return request<Result<number>>('/api/user', {
+  return request<Result<string>>('/api/user', {
     method: 'POST',
     data: body,
   });
@@ -85,7 +88,7 @@ export async function createUser(body: UserForm) {
  * 修改用户
  * PUT /api/user/{userId}
  */
-export async function updateUser(userId: number, body: UserForm) {
+export async function updateUser(userId: string, body: UserForm) {
   return request<Result<void>>(`/api/user/${userId}`, {
     method: 'PUT',
     data: body,
@@ -96,7 +99,7 @@ export async function updateUser(userId: number, body: UserForm) {
  * 删除用户
  * DELETE /api/user/{userId}
  */
-export async function deleteUser(userId: number) {
+export async function deleteUser(userId: string) {
   return request<Result<void>>(`/api/user/${userId}`, {
     method: 'DELETE',
   });
@@ -106,7 +109,7 @@ export async function deleteUser(userId: number) {
  * 批量删除用户
  * DELETE /api/user/batch?userIds=1&userIds=2
  */
-export async function batchDeleteUsers(userIds: number[]) {
+export async function batchDeleteUsers(userIds: string[]) {
   return request<Result<void>>('/api/user/batch', {
     method: 'DELETE',
     params: {
@@ -119,7 +122,7 @@ export async function batchDeleteUsers(userIds: number[]) {
  * 锁定用户
  * PUT /api/user/{userId}/lock
  */
-export async function lockUser(userId: number) {
+export async function lockUser(userId: string) {
   return request<Result<void>>(`/api/user/${userId}/lock`, {
     method: 'PUT',
   });
@@ -129,7 +132,7 @@ export async function lockUser(userId: number) {
  * 解锁用户
  * PUT /api/user/{userId}/unlock
  */
-export async function unlockUser(userId: number) {
+export async function unlockUser(userId: string) {
   return request<Result<void>>(`/api/user/${userId}/unlock`, {
     method: 'PUT',
   });
@@ -139,15 +142,15 @@ export async function unlockUser(userId: number) {
  * 获取用户详情
  * GET /api/user/{userId}
  */
-export async function getUserDetail(userId: number) {
+export async function getUserDetail(userId: string) {
   return request<Result<{
-    userId: number;
+    userId: string;
     userName: string;
     account?: string;
     gender?: string;
     phone?: string;
     email?: string;
-    deptIds?: number[];
+    deptIds?: string[];
     deptNames?: string[];
   }>>(`/api/user/${userId}`, {
     method: 'GET',
@@ -158,8 +161,8 @@ export async function getUserDetail(userId: number) {
  * 获取用户部门ID列表
  * GET /api/user/{userId}/depts
  */
-export async function getUserDeptIds(userId: number) {
-  return request<Result<number[]>>(`/api/user/${userId}/depts`, {
+export async function getUserDeptIds(userId: string) {
+  return request<Result<string[]>>(`/api/user/${userId}/depts`, {
     method: 'GET',
   });
 }

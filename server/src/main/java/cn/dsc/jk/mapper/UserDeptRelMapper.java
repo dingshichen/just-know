@@ -13,7 +13,7 @@ import java.util.List;
  * @author ding.shichen
  */
 @Mapper
-public interface UserDeptMapper extends BaseMapper<UserDeptRelEntity> {
+public interface UserDeptRelMapper extends BaseMapper<UserDeptRelEntity> {
 
     /**
      * 根据用户ID查询机构ID列表
@@ -30,6 +30,13 @@ public interface UserDeptMapper extends BaseMapper<UserDeptRelEntity> {
      * @return 用户ID列表
      */
     List<Long> selectUserIdsByDeptId(@Param("deptId") Long deptId);
+
+    /**
+     * 根据用户ID集合查询列表
+     * @param userIds 用户Id集合
+     * @return 用户机构关系列表
+     */
+    List<UserDeptRelEntity> selectByUserIds(@Param("userIds") List<Long> userIds);
 
     /**
      * 根据用户ID删除关系

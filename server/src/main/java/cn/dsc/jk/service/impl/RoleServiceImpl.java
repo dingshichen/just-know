@@ -1,8 +1,10 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.dto.role.RoleConvert;
 import cn.dsc.jk.dto.role.RoleCreate;
 import cn.dsc.jk.dto.role.RoleDetail;
 import cn.dsc.jk.dto.role.RoleItem;
+import cn.dsc.jk.dto.role.RoleOption;
 import cn.dsc.jk.dto.role.RolePageQuery;
 import cn.dsc.jk.dto.role.RoleUpdate;
 import cn.dsc.jk.entity.RoleEntity;
@@ -11,12 +13,10 @@ import cn.dsc.jk.service.RoleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 角色服务实现类
@@ -27,10 +27,17 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> implements RoleService {
 
     @Override
+    public List<RoleOption> selectByIds(List<Long> ids) {
+        return this.listByIds(ids).stream().map(RoleConvert.FU_TO_OPTION).toList();
+    }
+
+    @Override
     @Transactional
     public Long create(RoleCreate create) {
         RoleEntity entity = new RoleEntity();
-        BeanUtils.copyProperties(create, entity);
+        entity.setRoleName(create.getRoleName());
+        entity.setRoleCode(create.getRoleCode());
+        entity.setRoleDesc(create.getRoleDesc());
         this.save(entity);
         return entity.getRoleId();
     }
@@ -40,7 +47,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> impleme
     public void update(Long roleId, RoleUpdate update) {
         RoleEntity entity = new RoleEntity();
         entity.setRoleId(roleId);
-        BeanUtils.copyProperties(update, entity);
+        entity.setRoleName(update.getRoleName());
+        entity.setRoleCode(update.getRoleCode());
+        entity.setRoleDesc(update.getRoleDesc());
         this.updateById(entity);
     }
 
@@ -58,14 +67,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> impleme
 
     @Override
     public RoleDetail load(Long roleId) {
-        RoleEntity entity = this.getById(roleId);
-        if (entity == null) {
-            return null;
-        }
-
-        RoleDetail detail = new RoleDetail();
-        BeanUtils.copyProperties(entity, detail);
-        return detail;
+        return RoleConvert.FU_TO_DETAIL.apply(this.getById(roleId));
     }
 
     @Override
@@ -75,13 +77,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> impleme
                 query.getRoleName(),
                 query.getRoleCode()
         );
-
-        List<RoleItem> items = entities.stream().map(entity -> {
-            RoleItem item = new RoleItem();
-            BeanUtils.copyProperties(entity, item);
-            return item;
-        }).collect(Collectors.toList());
-
-        return new PageInfo<>(items);
+        return new PageInfo<>(entities.stream().map(RoleConvert.FU_TO_ITEM).toList());
     }
+
+
 }
+

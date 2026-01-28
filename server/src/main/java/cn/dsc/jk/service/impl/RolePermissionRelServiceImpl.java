@@ -1,11 +1,10 @@
 package cn.dsc.jk.service.impl;
 
 import cn.dsc.jk.entity.RolePermissionRelEntity;
-import cn.dsc.jk.mapper.RolePermissionMapper;
-import cn.dsc.jk.service.RolePermissionService;
+import cn.dsc.jk.mapper.RolePermissionRelMapper;
+import cn.dsc.jk.service.RolePermissionRelService;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
  * @author ding.shichen
  */
 @Service
-public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper, RolePermissionRelEntity> implements RolePermissionService {
+public class RolePermissionRelServiceImpl extends ServiceImpl<RolePermissionRelMapper, RolePermissionRelEntity> implements RolePermissionRelService {
 
     @Override
     public List<Long> getPermissionIdsByRoleId(Long roleId) {

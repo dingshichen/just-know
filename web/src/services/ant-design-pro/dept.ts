@@ -7,11 +7,11 @@ import { request } from '@umijs/max';
  * 对应后端的 DeptItem DTO
  */
 export type DeptItem = {
-  deptId: number;
+  deptId: string;
   deptName: string;
   deptCode?: string;
   deptDesc?: string;
-  parentDeptId?: number;
+  parentDeptId?: string;
   sortNo?: number;
   createdTime?: string;
   updatedTime?: string;
@@ -27,7 +27,7 @@ export type DeptPageParams = {
   pageSize?: number;
   deptName?: string;
   deptCode?: string;
-  parentDeptId?: number;
+  parentDeptId?: string;
 };
 
 /**
@@ -75,7 +75,7 @@ export type DeptForm = {
   deptName: string;
   deptCode?: string;
   deptDesc?: string;
-  parentDeptId?: number;
+  parentDeptId?: string;
   sortNo: number;
 };
 
@@ -84,7 +84,7 @@ export type DeptForm = {
  * POST /api/dept
  */
 export async function createDept(body: DeptForm) {
-  return request<Result<number>>('/api/dept', {
+  return request<Result<string>>('/api/dept', {
     method: 'POST',
     data: body,
   });
@@ -94,7 +94,7 @@ export async function createDept(body: DeptForm) {
  * 修改机构
  * PUT /api/dept/{deptId}
  */
-export async function updateDept(deptId: number, body: DeptForm) {
+export async function updateDept(deptId: string, body: DeptForm) {
   return request<Result<void>>(`/api/dept/${deptId}`, {
     method: 'PUT',
     data: body,
@@ -105,7 +105,7 @@ export async function updateDept(deptId: number, body: DeptForm) {
  * 删除机构
  * DELETE /api/dept/{deptId}
  */
-export async function deleteDept(deptId: number) {
+export async function deleteDept(deptId: string) {
   return request<Result<void>>(`/api/dept/${deptId}`, {
     method: 'DELETE',
   });
@@ -115,7 +115,7 @@ export async function deleteDept(deptId: number) {
  * 批量删除机构
  * DELETE /api/dept/batch?deptIds=1&deptIds=2
  */
-export async function batchDeleteDepts(deptIds: number[]) {
+export async function batchDeleteDepts(deptIds: string[]) {
   return request<Result<void>>('/api/dept/batch', {
     method: 'DELETE',
     params: {

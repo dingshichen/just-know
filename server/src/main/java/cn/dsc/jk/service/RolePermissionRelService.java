@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author ding.shichen
  */
-public interface RolePermissionService extends IService<RolePermissionRelEntity> {
+public interface RolePermissionRelService extends IService<RolePermissionRelEntity> {
 
     /**
      * 根据角色ID查询权限ID列表

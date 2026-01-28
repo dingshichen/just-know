@@ -47,6 +47,18 @@ let mockUsers: any[] = [
     phone: '13800000000',
     email: 'admin@example.com',
     lockedFlag: 0,
+    roles: [
+      {
+        roleId: 1,
+        roleName: '系统管理员',
+      },
+    ],
+    depts: [
+      {
+        deptId: 1,
+        deptName: '信息技术部',
+      },
+    ],
     createdTime: '2024-01-01 10:00:00',
     updatedTime: '2024-01-01 10:00:00',
   },
@@ -58,6 +70,18 @@ let mockUsers: any[] = [
     phone: '13900000000',
     email: 'user@example.com',
     lockedFlag: 0,
+    roles: [
+      {
+        roleId: 2,
+        roleName: '普通用户',
+      },
+    ],
+    depts: [
+      {
+        deptId: 2,
+        deptName: '市场部',
+      },
+    ],
     createdTime: '2024-01-02 11:00:00',
     updatedTime: '2024-01-02 11:00:00',
   },

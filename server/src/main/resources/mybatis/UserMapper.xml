@@ -45,25 +45,25 @@
     </resultMap>
 
     <!-- Select list with conditions -->
-    <select id="selectList" resultMap="baseResultMap" parameterType="cn.dsc.jk.dto.user.UserPageQuery">
+    <select id="selectList" resultMap="baseResultMap" parameterType="map">
         SELECT
         <include refid="Base_Column_List"/>
         FROM user
         <where>
-            <if test="query.userName != null and query.userName != ''">
-                AND user_name LIKE CONCAT('%', #{query.userName}, '%')
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
             </if>
-            <if test="query.account != null and query.account != ''">
-                AND account LIKE CONCAT('%', #{query.account}, '%')
+            <if test="account != null and account != ''">
+                AND account LIKE CONCAT('%', #{account}, '%')
             </if>
-            <if test="query.phone != null and query.phone != ''">
-                AND phone LIKE CONCAT('%', #{query.phone}, '%')
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
             </if>
-            <if test="query.email != null and query.email != ''">
-                AND email LIKE CONCAT('%', #{query.email}, '%')
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
             </if>
-            <if test="query.lockedFlag != null">
-                AND locked_flag = #{query.lockedFlag}
+            <if test="lockedFlag != null">
+                AND locked_flag = #{lockedFlag}
             </if>
         </where>
         ORDER BY user_id DESC

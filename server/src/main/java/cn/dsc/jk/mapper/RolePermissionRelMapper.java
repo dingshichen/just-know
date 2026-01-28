@@ -13,7 +13,7 @@ import java.util.List;
  * @author ding.shichen
  */
 @Mapper
-public interface RolePermissionMapper extends BaseMapper<RolePermissionRelEntity> {
+public interface RolePermissionRelMapper extends BaseMapper<RolePermissionRelEntity> {
 
     /**
      * 根据角色ID查询权限ID列表

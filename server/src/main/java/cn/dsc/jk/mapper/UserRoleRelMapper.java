@@ -14,7 +14,7 @@ import java.util.List;
  * @author ding.shichen
  */
 @Mapper
-public interface UserRoleMapper extends BaseMapper<UserRoleRelEntity> {
+public interface UserRoleRelMapper extends BaseMapper<UserRoleRelEntity> {
 
     /**
      * 根据用户ID查询角色ID列表
@@ -31,6 +31,14 @@ public interface UserRoleMapper extends BaseMapper<UserRoleRelEntity> {
      * @return 用户ID列表
      */
     List<Long> selectUserIdsByRoleId(@Param("roleId") Long roleId);
+
+    /**
+     * 根据用户ID列表查询用户角色关系列表
+     *
+     * @param userIds 用户ID列表
+     * @return 用户角色关系列表
+     */
+    List<UserRoleRelEntity> selectByUserIds(@Param("userIds") List<Long> userIds);
 
     /**
      * 根据用户ID删除关系
@@ -55,4 +63,6 @@ public interface UserRoleMapper extends BaseMapper<UserRoleRelEntity> {
      * @return 授权权限列表
      */
     List<GrantedAuthorityPermission> selectGrantedAuthorityByUserId(@Param("userId") Long userId);
+
+
 }

@@ -1,5 +1,6 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.dto.permission.PermissionConvert;
 import cn.dsc.jk.dto.permission.PermissionCreate;
 import cn.dsc.jk.dto.permission.PermissionDetail;
 import cn.dsc.jk.dto.permission.PermissionItem;
@@ -11,12 +12,10 @@ import cn.dsc.jk.service.PermissionService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 权限服务实现类
@@ -30,7 +29,8 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     @Transactional
     public Long create(PermissionCreate create) {
         PermissionEntity entity = new PermissionEntity();
-        BeanUtils.copyProperties(create, entity);
+        entity.setPermissionName(create.getPermissionName());
+        entity.setPermissionCode(create.getPermissionCode());
         this.save(entity);
         return entity.getPermissionId();
     }
@@ -40,7 +40,8 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     public void update(Long permissionId, PermissionUpdate update) {
         PermissionEntity entity = new PermissionEntity();
         entity.setPermissionId(permissionId);
-        BeanUtils.copyProperties(update, entity);
+        entity.setPermissionName(update.getPermissionName());
+        entity.setPermissionCode(update.getPermissionCode());
         this.updateById(entity);
     }
 
@@ -58,14 +59,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 
     @Override
     public PermissionDetail load(Long permissionId) {
-        PermissionEntity entity = this.getById(permissionId);
-        if (entity == null) {
-            return null;
-        }
-
-        PermissionDetail detail = new PermissionDetail();
-        BeanUtils.copyProperties(entity, detail);
-        return detail;
+        return PermissionConvert.FU_TO_DETAIL.apply(this.getById(permissionId));
     }
 
     @Override
@@ -75,13 +69,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
                 query.getPermissionName(),
                 query.getPermissionCode()
         );
-
-        List<PermissionItem> items = entities.stream().map(entity -> {
-            PermissionItem item = new PermissionItem();
-            BeanUtils.copyProperties(entity, item);
-            return item;
-        }).collect(Collectors.toList());
-
-        return new PageInfo<>(items);
+        return new PageInfo<>(entities.stream().map(PermissionConvert.FU_TO_ITEM).toList());
     }
 }
+

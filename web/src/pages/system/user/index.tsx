@@ -8,7 +8,7 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, message, Popconfirm, Tag } from 'antd';
+import { Button, Form, message, Popconfirm, Tag } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import type { UserForm, UserItem, UserPageParams } from '@/services/ant-design-pro/user';
 import {
@@ -24,13 +24,15 @@ import {
 import { listDeptTree, type DeptItem } from '@/services/ant-design-pro/dept';
 
 const Users: React.FC = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<UserItem | undefined>();
   const [selectedRows, setSelectedRows] = useState<UserItem[]>([]);
   const [deptTree, setDeptTree] = useState<DeptItem[]>([]);
-  const [editDeptIds, setEditDeptIds] = useState<number[]>([]);
+  const [editDeptIds, setEditDeptIds] = useState<string[]>([]);
+  const editInitialValuesRef = useRef<Partial<UserForm> | null>(null);
+  const [editForm] = Form.useForm<UserForm>();
 
   // 加载部门树形数据
   useEffect(() => {
@@ -65,17 +67,38 @@ const Users: React.FC = () => {
           const res = await getUserDeptIds(currentRow.userId);
           if (res.code === 0 && res.data) {
             setEditDeptIds(res.data);
+            editForm.setFieldsValue({ deptIds: res.data });
           }
         } catch (e) {
           console.error('加载用户部门失败', e);
           setEditDeptIds([]);
+          editForm.setFieldsValue({ deptIds: [] });
         }
       } else {
         setEditDeptIds([]);
       }
     };
     loadUserDepts();
-  }, [editModalOpen, currentRow?.userId]);
+  }, [editModalOpen, currentRow?.userId, editForm]);
+
+  // 打开编辑弹窗时回填基础字段（部门在另一个 effect 异步回填）
+  useEffect(() => {
+    if (editModalOpen && currentRow) {
+      const initialValues: Partial<UserForm> = {
+        userName: currentRow.userName,
+        account: currentRow.account ?? '',
+        gender: currentRow.gender,
+        phone: currentRow.phone,
+        email: currentRow.email,
+        deptIds: editDeptIds ?? [],
+      };
+      editInitialValuesRef.current = initialValues;
+      editForm.setFieldsValue(initialValues as UserForm);
+      return;
+    }
+    editInitialValuesRef.current = null;
+    editForm.resetFields();
+  }, [editModalOpen, currentRow, editDeptIds, editForm]);
 
   const handleSubmit = async (values: UserForm, isEdit: boolean) => {
     const hide = message.loading(isEdit ? '正在保存用户信息' : '正在新增用户');
@@ -176,13 +199,13 @@ const Users: React.FC = () => {
     },
     {
       title: '部门',
-      dataIndex: 'deptNames',
+      dataIndex: 'depts',
       search: false,
       render: (_, record) => {
-        if (record.deptNames && record.deptNames.length > 0) {
-          return record.deptNames.map((name, index) => (
+        if (record.depts && record.depts.length > 0) {
+          return record.depts.map((dept, index) => (
             <Tag key={index} style={{ marginRight: 4 }}>
-              {name}
+              {dept.deptName}
             </Tag>
           ));
         }
@@ -351,20 +374,16 @@ const Users: React.FC = () => {
       <ModalForm<UserForm>
         title="编辑用户"
         open={editModalOpen}
-        initialValues={{
-          userName: currentRow?.userName,
-          account: currentRow?.account,
-          gender: currentRow?.gender,
-          phone: currentRow?.phone,
-          email: currentRow?.email,
-          deptIds: editDeptIds,
-        }}
+        initialValues={editInitialValuesRef.current || undefined}
+        form={editForm}
         modalProps={{
           destroyOnHidden: true,
           onCancel: () => {
             setEditModalOpen(false);
             setCurrentRow(undefined);
             setEditDeptIds([]);
+            editInitialValuesRef.current = null;
+            editForm.resetFields();
           },
         }}
         onFinish={async (values) => {

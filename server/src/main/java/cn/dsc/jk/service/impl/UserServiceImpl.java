@@ -1,7 +1,11 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.common.SecurityConstant;
+import cn.dsc.jk.dto.dept.DeptOption;
 import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
+import cn.dsc.jk.dto.role.RoleConvert;
 import cn.dsc.jk.dto.role.RoleOption;
+import cn.dsc.jk.dto.user.UserConvert;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
 import cn.dsc.jk.dto.user.UserItem;
@@ -14,17 +18,15 @@ import cn.dsc.jk.entity.UserRoleRelEntity;
 import cn.dsc.jk.mapper.UserMapper;
 import cn.dsc.jk.service.DeptService;
 import cn.dsc.jk.service.RoleService;
-import cn.dsc.jk.service.UserDeptService;
-import cn.dsc.jk.service.UserRoleService;
+import cn.dsc.jk.service.UserDeptRelService;
+import cn.dsc.jk.service.UserRelRoleService;
 import cn.dsc.jk.service.UserService;
-import cn.dsc.jk.entity.DeptEntity;
 import cn.dsc.jk.entity.UserDeptRelEntity;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -45,13 +48,13 @@ import java.util.stream.Collectors;
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> implements UserService {
 
     @Autowired
-    private UserRoleService userRoleService;
+    private UserRelRoleService userRoleRelService;
 
     @Autowired
     private RoleService roleService;
 
     @Autowired
-    private UserDeptService userDeptService;
+    private UserDeptRelService userDeptRelService;
 
     @Autowired
     private DeptService deptService;
@@ -62,7 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (detail == null) {
             throw new UsernameNotFoundException("用户不存在");
         }
-        List<GrantedAuthorityPermission> permissions = userRoleService.getGrantedAuthorityByUserId(detail.getUserId());
+        List<GrantedAuthorityPermission> permissions = userRoleRelService.getGrantedAuthorityByUserId(detail.getUserId());
         detail.setAuthorities(permissions);
         return detail;
     }
@@ -70,13 +73,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Transactional
     public Long create(UserCreate create) {
         UserEntity entity = new UserEntity();
-        BeanUtils.copyProperties(create, entity);
+        entity.setUserName(create.getUserName());
+        entity.setAvatarAttachId(create.getAvatarAttachId());
+        entity.setAccount(create.getAccount());
+        entity.setGender(create.getGender());
+        entity.setPhone(create.getPhone());
+        entity.setEmail(create.getEmail());
         // 设置锁定标志默认值
         if (entity.getLockedFlag() == null) {
             entity.setLockedFlag(false);
         }
         this.save(entity);
-        
+
         // 处理部门关联
         if (CollUtil.isNotEmpty(create.getDeptIds())) {
             List<UserDeptRelEntity> userDepts = create.getDeptIds().stream().map(deptId -> {
@@ -85,9 +93,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 userDept.setDeptId(deptId);
                 return userDept;
             }).collect(Collectors.toList());
-            userDeptService.saveBatch(userDepts);
+            userDeptRelService.saveBatch(userDepts);
         }
-        
+
         return entity.getUserId();
     }
 
@@ -96,11 +104,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     public void update(Long userId, UserUpdate update) {
         UserEntity entity = new UserEntity();
         entity.setUserId(userId);
-        BeanUtils.copyProperties(update, entity);
+        entity.setUserName(update.getUserName());
+        entity.setAvatarAttachId(update.getAvatarAttachId());
+        entity.setAccount(update.getAccount());
+        entity.setGender(update.getGender());
+        entity.setPhone(update.getPhone());
+        entity.setEmail(update.getEmail());
         this.updateById(entity);
-        
+
         // 处理部门关联：先删除原有关系，再插入新关系
-        userDeptService.deleteByUserId(userId);
+        userDeptRelService.deleteByUserId(userId);
         if (CollUtil.isNotEmpty(update.getDeptIds())) {
             List<UserDeptRelEntity> userDepts = update.getDeptIds().stream().map(deptId -> {
                 UserDeptRelEntity userDept = new UserDeptRelEntity();
@@ -108,7 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 userDept.setDeptId(deptId);
                 return userDept;
             }).collect(Collectors.toList());
-            userDeptService.saveBatch(userDepts);
+            userDeptRelService.saveBatch(userDepts);
         }
     }
 
@@ -116,9 +129,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Transactional
     public void delete(Long userId) {
         // 删除用户角色关系
-        userRoleService.deleteByUserId(userId);
+        userRoleRelService.deleteByUserId(userId);
         // 删除用户部门关系
-        userDeptService.deleteByUserId(userId);
+        userDeptRelService.deleteByUserId(userId);
         // 删除用户
         this.removeById(userId);
     }
@@ -131,11 +144,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         }
         // 批量删除用户角色关系
         for (Long userId : userIds) {
-            userRoleService.deleteByUserId(userId);
+            userRoleRelService.deleteByUserId(userId);
         }
         // 批量删除用户部门关系
         for (Long userId : userIds) {
-            userDeptService.deleteByUserId(userId);
+            userDeptRelService.deleteByUserId(userId);
         }
         // 批量删除用户
         this.removeBatchByIds(userIds);
@@ -148,35 +161,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             return null;
         }
 
-        UserDetail detail = new UserDetail();
-        BeanUtils.copyProperties(entity, detail);
+        UserDetail detail = UserConvert.FU_TO_DETAIL.apply(entity);
 
         // 加载用户角色
-        List<Long> roleIds = userRoleService.getRoleIdsByUserId(userId);
+        List<Long> roleIds = userRoleRelService.getRoleIdsByUserId(userId);
         if (CollUtil.isNotEmpty(roleIds)) {
-            List<RoleEntity> roleEntities = roleService.listByIds(roleIds);
-            List<RoleOption> roles = roleEntities.stream().map(role -> {
-                RoleOption option = new RoleOption();
-                option.setRoleId(role.getRoleId());
-                option.setRoleName(role.getRoleName());
-                return option;
-            }).collect(Collectors.toList());
-            detail.setRoles(roles);
-        } else {
-            detail.setRoles(new ArrayList<>());
+            detail.setRoles(roleService.selectByIds(roleIds));
         }
 
         // 加载用户部门信息
-        List<Long> deptIds = userDeptService.getDeptIdsByUserId(userId);
-        detail.setDeptIds(deptIds != null ? deptIds : new ArrayList<>());
+        List<Long> deptIds = userDeptRelService.getDeptIdsByUserId(userId);
         if (CollUtil.isNotEmpty(deptIds)) {
-            List<DeptEntity> deptEntities = deptService.listByIds(deptIds);
-            List<String> deptNames = deptEntities.stream()
-                    .map(DeptEntity::getDeptName)
-                    .collect(Collectors.toList());
-            detail.setDeptNames(deptNames);
-        } else {
-            detail.setDeptNames(new ArrayList<>());
+            detail.setDepts(deptService.selectByIds(deptIds));
         }
 
         return detail;
@@ -185,27 +181,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Override
     public PageInfo<UserItem> page(UserPageQuery query) {
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<UserEntity> entities = this.baseMapper.selectList(query);
+        List<UserEntity> entities = this.baseMapper.selectList(
+                query.getUserName(),
+                query.getAccount(),
+                query.getPhone(),
+                query.getEmail(),
+                query.getLockedFlag()
+        );
+        List<UserItem> items = entities.stream()
+                .map(UserConvert.FU_TO_ITEM)
+                .collect(Collectors.toList());
+        // 提取用户ID集合
+        List<Long> userIds = entities.stream().map(UserEntity::getUserId).toList();
+        // 加载角色信息
+        Map<Long, List<RoleOption>> roleOptionsMap = userRoleRelService.listRoleOptionsMapByUserIds(userIds);
+        items.forEach(item -> {
+            List<RoleOption> roles = roleOptionsMap.get(item.getUserId());
+            item.setRoles(roles);
+        });
 
-        List<UserItem> items = entities.stream().map(entity -> {
-            UserItem item = new UserItem();
-            BeanUtils.copyProperties(entity, item);
-            
-            // 填充部门信息
-            List<Long> deptIds = userDeptService.getDeptIdsByUserId(entity.getUserId());
-            if (CollUtil.isNotEmpty(deptIds)) {
-                List<DeptEntity> deptEntities = deptService.listByIds(deptIds);
-                List<String> deptNames = deptEntities.stream()
-                        .map(DeptEntity::getDeptName)
-                        .collect(Collectors.toList());
-                item.setDeptNames(deptNames);
-            } else {
-                item.setDeptNames(new ArrayList<>());
-            }
-            
-            return item;
-        }).collect(Collectors.toList());
-
+        // 加载用户部门信息
+        Map<Long, List<DeptOption>> deptOptionsMap = userDeptRelService.listDeptOptionsMapByUserIds(userIds);
+        items.forEach(item -> {
+            List<DeptOption> depts = deptOptionsMap.get(item.getUserId());
+            item.setDepts(depts);
+        });
         return new PageInfo<>(items);
     }
 
@@ -235,7 +235,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Transactional
     public void assignRoles(Long userId, List<Long> roleIds) {
         // 先删除原有关系
-        userRoleService.deleteByUserId(userId);
+        userRoleRelService.deleteByUserId(userId);
 
         // 如果有新的角色，批量插入
         if (CollUtil.isNotEmpty(roleIds)) {
@@ -245,7 +245,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 userRole.setRoleId(roleId);
                 return userRole;
             }).collect(Collectors.toList());
-            userRoleService.saveBatch(userRoles);
+            userRoleRelService.saveBatch(userRoles);
         }
 
     }
@@ -256,10 +256,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (detail == null) {
             return null;
         }
-        List<GrantedAuthorityPermission> authorities = userRoleService.getGrantedAuthorityByUserId(userId);
+        List<GrantedAuthorityPermission> authorities = userRoleRelService.getGrantedAuthorityByUserId(userId);
         detail.setAuthorities(authorities);
         boolean hasAdmin = authorities != null && authorities.stream()
-                .anyMatch(a -> "admin".equals(a.getPermissionCode()));
+                .anyMatch(a -> SecurityConstant.SYS_ADMIN_ROLE_CODE.equals(a.getPermissionCode()));
         detail.setAccess(hasAdmin ? "admin" : null);
         return detail;
     }

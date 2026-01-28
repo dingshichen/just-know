@@ -6,9 +6,9 @@ description: This is a rule for server code
 # Overview
 
 - 生成的代码注释里的 @author 设置为 ding.shichen
-- 不允许使用 MybatisPlus 的 QueryWrapper、UpdateWrapper、LambdaQueryWrapper、LambdaUpdateWrapper、LambdaWrapper
+- 禁止使用 MybatisPlus 的 QueryWrapper、UpdateWrapper、LambdaQueryWrapper、LambdaUpdateWrapper、LambdaWrapper、lambdaQuery
 - 数据库 PO (entity) 的类型名字要加 Entity 后缀。
-- 日期时间不使用 Date 类型，根据需要选择 LocalDate LocalDateTime 类型。
+- 日期时间禁止使用 Date 类型，根据需要选择 LocalDate LocalDateTime 类型。
 - 数据库 tinyint(1) 字段类型映射成 Java Boolean 类型。
 - 持久层 Mapper 接口要继承 com.baomidou.mybatisplus.core.mapper.BaseMapper。
 - 服务层 Service 接口要继承 com.baomidou.mybatisplus.extension.service.IService。

@@ -1,7 +1,9 @@
 package cn.dsc.jk.dto.user;
 
+import cn.dsc.jk.common.IBase;
 import lombok.Data;
 
+import java.beans.Transient;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -11,7 +13,7 @@ import java.io.Serializable;
  * @author ding.shichen
  */
 @Data
-public class UserOption implements Serializable {
+public class UserOption implements IBase, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -25,4 +27,10 @@ public class UserOption implements Serializable {
      * 用户姓名
      */
     private String userName;
+
+    @Transient
+    @Override
+    public Long getId() {
+        return userId;
+    }
 }

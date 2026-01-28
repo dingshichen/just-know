@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.dsc.jk.mapper.UserDeptMapper">
+<mapper namespace="cn.dsc.jk.mapper.UserDeptRelMapper">
 
     <!-- Base Result Map -->
     <resultMap id="baseResultMap" type="cn.dsc.jk.entity.UserDeptRelEntity">
@@ -27,6 +27,16 @@
         SELECT user_id
         FROM user_dept_rel
         WHERE dept_id = #{deptId}
+    </select>
+
+    <!-- Select by user IDs -->
+    <select id="selectByUserIds" resultMap="baseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM user_dept_rel
+        WHERE user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
     </select>
 
     <!-- Delete by user ID -->

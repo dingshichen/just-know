@@ -1,5 +1,6 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.dto.menu.MenuConvert;
 import cn.dsc.jk.dto.menu.MenuCreate;
 import cn.dsc.jk.dto.menu.MenuDetail;
 import cn.dsc.jk.dto.menu.MenuItem;
@@ -11,12 +12,10 @@ import cn.dsc.jk.service.MenuService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 菜单服务实现类
@@ -30,7 +29,13 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, MenuEntity> impleme
     @Transactional
     public Long create(MenuCreate create) {
         MenuEntity entity = new MenuEntity();
-        BeanUtils.copyProperties(create, entity);
+        entity.setMenuName(create.getMenuName());
+        entity.setMenuType(create.getMenuType());
+        entity.setMenuFileName(create.getMenuFileName());
+        entity.setMenuIcon(create.getMenuIcon());
+        entity.setMenuRoute(create.getMenuRoute());
+        entity.setPermissionId(create.getPermissionId());
+        entity.setParentMenuId(create.getParentMenuId());
         this.save(entity);
         return entity.getMenuId();
     }
@@ -40,7 +45,13 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, MenuEntity> impleme
     public void update(Long menuId, MenuUpdate update) {
         MenuEntity entity = new MenuEntity();
         entity.setMenuId(menuId);
-        BeanUtils.copyProperties(update, entity);
+        entity.setMenuName(update.getMenuName());
+        entity.setMenuType(update.getMenuType());
+        entity.setMenuFileName(update.getMenuFileName());
+        entity.setMenuIcon(update.getMenuIcon());
+        entity.setMenuRoute(update.getMenuRoute());
+        entity.setPermissionId(update.getPermissionId());
+        entity.setParentMenuId(update.getParentMenuId());
         this.updateById(entity);
     }
 
@@ -58,14 +69,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, MenuEntity> impleme
 
     @Override
     public MenuDetail load(Long menuId) {
-        MenuEntity entity = this.getById(menuId);
-        if (entity == null) {
-            return null;
-        }
-
-        MenuDetail detail = new MenuDetail();
-        BeanUtils.copyProperties(entity, detail);
-        return detail;
+        return MenuConvert.FU_TO_DETAIL.apply(this.getById(menuId));
     }
 
     @Override
@@ -76,13 +80,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, MenuEntity> impleme
                 query.getMenuType(),
                 query.getParentMenuId()
         );
-
-        List<MenuItem> items = entities.stream().map(entity -> {
-            MenuItem item = new MenuItem();
-            BeanUtils.copyProperties(entity, item);
-            return item;
-        }).collect(Collectors.toList());
-
-        return new PageInfo<>(items);
+        return new PageInfo<>(entities.stream().map(MenuConvert.FU_TO_ITEM).toList());
     }
 }
+

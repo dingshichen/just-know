@@ -1,6 +1,7 @@
 package cn.dsc.jk.service.impl;
 
 import cn.dsc.jk.consts.AttachStorageType;
+import cn.dsc.jk.dto.attach.AttachConvert;
 import cn.dsc.jk.dto.attach.AttachDetail;
 import cn.dsc.jk.dto.attach.AttachItem;
 import cn.dsc.jk.dto.attach.AttachPageQuery;
@@ -16,7 +17,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -94,9 +94,7 @@ public class AttachServiceImpl extends ServiceImpl<AttachMapper, AttachEntity> i
             this.updateById(entity);
 
             // 转换为DTO
-            AttachDetail detail = new AttachDetail();
-            BeanUtils.copyProperties(entity, detail);
-            return detail;
+            return AttachConvert.FU_TO_DETAIL.apply(entity);
 
         } catch (IOException e) {
             log.error("文件上传失败", e);
@@ -138,10 +136,7 @@ public class AttachServiceImpl extends ServiceImpl<AttachMapper, AttachEntity> i
         if (entity == null) {
             return null;
         }
-
-        AttachDetail detail = new AttachDetail();
-        BeanUtils.copyProperties(entity, detail);
-        return detail;
+        return AttachConvert.FU_TO_DETAIL.apply(entity);
     }
 
     @Override
@@ -150,13 +145,7 @@ public class AttachServiceImpl extends ServiceImpl<AttachMapper, AttachEntity> i
         List<AttachEntity> entities = this.baseMapper.selectList(query.getTitle(), 
                 query.getStorageType(), query.getAttachType());
 
-        List<AttachItem> items = entities.stream().map(entity -> {
-            AttachItem item = new AttachItem();
-            BeanUtils.copyProperties(entity, item);
-            return item;
-        }).collect(Collectors.toList());
-
-        return new PageInfo<>(items);
+        return new PageInfo<>(entities.stream().map(AttachConvert.FU_TO_ITEM).collect(Collectors.toList()));
     }
 
     @Override

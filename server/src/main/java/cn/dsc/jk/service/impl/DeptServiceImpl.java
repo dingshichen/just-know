@@ -1,9 +1,11 @@
 package cn.dsc.jk.service.impl;
 
+import cn.dsc.jk.dto.dept.DeptConvert;
 import cn.dsc.jk.dto.dept.DeptCreate;
 import cn.dsc.jk.dto.dept.DeptDetail;
 import cn.dsc.jk.dto.dept.DeptItem;
 import cn.dsc.jk.dto.dept.DeptPageQuery;
+import cn.dsc.jk.dto.dept.DeptOption;
 import cn.dsc.jk.dto.dept.DeptUpdate;
 import cn.dsc.jk.entity.DeptEntity;
 import cn.dsc.jk.mapper.DeptMapper;
@@ -12,12 +14,10 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +35,19 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, DeptEntity> impleme
     private DeptMapper deptMapper;
 
     @Override
+    public List<DeptOption> selectByIds(List<Long> ids) {
+        return deptMapper.selectBatchIds(ids).stream().map(DeptConvert.FU_TO_OPTION).toList();
+    }
+
+    @Override
     @Transactional
     public Long create(DeptCreate create) {
         DeptEntity entity = new DeptEntity();
-        BeanUtils.copyProperties(create, entity);
+        entity.setDeptName(create.getDeptName());
+        entity.setDeptCode(create.getDeptCode());
+        entity.setDeptDesc(create.getDeptDesc());
+        entity.setParentDeptId(create.getParentDeptId());
+        entity.setSortNo(create.getSortNo());
         this.save(entity);
         return entity.getDeptId();
     }
@@ -48,7 +57,11 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, DeptEntity> impleme
     public void update(Long deptId, DeptUpdate update) {
         DeptEntity entity = new DeptEntity();
         entity.setDeptId(deptId);
-        BeanUtils.copyProperties(update, entity);
+        entity.setDeptName(update.getDeptName());
+        entity.setDeptCode(update.getDeptCode());
+        entity.setDeptDesc(update.getDeptDesc());
+        entity.setParentDeptId(update.getParentDeptId());
+        entity.setSortNo(update.getSortNo());
         this.updateById(entity);
     }
 
@@ -73,14 +86,7 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, DeptEntity> impleme
 
     @Override
     public DeptDetail load(Long deptId) {
-        DeptEntity entity = this.getById(deptId);
-        if (entity == null) {
-            return null;
-        }
-
-        DeptDetail detail = new DeptDetail();
-        BeanUtils.copyProperties(entity, detail);
-        return detail;
+        return DeptConvert.FU_TO_DETAIL.apply(this.getById(deptId));
     }
 
     @Override
@@ -92,31 +98,13 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, DeptEntity> impleme
                 query.getParentDeptId()
         );
 
-        List<DeptItem> items = entities.stream().map(entity -> {
-            DeptItem item = new DeptItem();
-            BeanUtils.copyProperties(entity, item);
-            return item;
-        }).collect(Collectors.toList());
-
-        return new PageInfo<>(items);
+        return new PageInfo<>(entities.stream().map(DeptConvert.FU_TO_ITEM).toList());
     }
 
     @Override
     public List<DeptItem> listAllTree() {
         List<DeptEntity> entities = deptMapper.selectAll();
-        if (CollUtil.isEmpty(entities)) {
-            return new ArrayList<>();
-        }
-
-        // 转换为 Item
-        List<DeptItem> items = entities.stream().map(entity -> {
-            DeptItem item = new DeptItem();
-            BeanUtils.copyProperties(entity, item);
-            return item;
-        }).collect(Collectors.toList());
-
-        // 构建树形结构
-        return buildTree(items);
+        return buildTree(entities.stream().map(DeptConvert.FU_TO_ITEM).toList());
     }
 
     /**
