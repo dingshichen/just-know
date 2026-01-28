@@ -6,7 +6,7 @@ description: This is a rule for server code
 # Overview
 
 - 生成的代码注释里的 @author 设置为 ding.shichen
-- 对需要动态拼接多个字段条件的数据库 select 操作，不允许使用 MybatisPlus 的条件构造器（Wrapper）方式，必须使用 Mybatis xml 的方式，其他场景尽量使用 MybatisPlus 的 API。
+- 不允许使用 MybatisPlus 的 QueryWrapper、UpdateWrapper、LambdaQueryWrapper、LambdaUpdateWrapper、LambdaWrapper
 - 数据库 PO (entity) 的类型名字要加 Entity 后缀。
 - 日期时间不使用 Date 类型，根据需要选择 LocalDate LocalDateTime 类型。
 - 数据库 tinyint(1) 字段类型映射成 Java Boolean 类型。
