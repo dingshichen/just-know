@@ -131,7 +131,7 @@ const Users: React.FC = () => {
   };
 
   const handleToggleLock = async (row: UserItem) => {
-    const isLocked = row.lockedFlag === 1;
+    const isLocked = row.lockedFlag === true;
     const hide = message.loading(isLocked ? '正在解锁用户' : '正在锁定用户');
     try {
       if (isLocked) {
@@ -140,7 +140,7 @@ const Users: React.FC = () => {
         await lockUser(row.userId);
       }
       hide();
-      message.success(isLocked ? '解锁成功' : '锁定成功');
+      message.success(row.lockedFlag ? '解锁成功' : '锁定成功');
       actionRef.current?.reload();
     } catch (e) {
       hide();
@@ -194,11 +194,11 @@ const Users: React.FC = () => {
       dataIndex: 'lockedFlag',
       valueType: 'select',
       valueEnum: {
-        0: { text: '正常', status: 'Success' },
-        1: { text: '已锁定', status: 'Error' },
+        true: { text: '已锁定', status: 'Error' },
+        false: { text: '正常', status: 'Success' },
       },
       render: (_, record) =>
-        record.lockedFlag === 1 ? (
+        record.lockedFlag ? (
           <Tag color="red">已锁定</Tag>
         ) : (
           <Tag color="green">正常</Tag>
@@ -236,7 +236,7 @@ const Users: React.FC = () => {
             handleToggleLock(record);
           }}
         >
-          {record.lockedFlag === 1 ? '解锁' : '锁定'}
+          {record.lockedFlag ? '解锁' : '锁定'}
         </a>,
         <Popconfirm
           key="delete"
