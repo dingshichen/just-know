@@ -7,3 +7,4 @@ description: This is a rule for frontend code
 
 - 修改前端代码时，如果涉及调用 api 的代码变更，必须要同时更新 mock 代码。如：新增一个 API，同时要在 mock 代码里也新增一个 mock api；如：修改 API 出入参，同时也要在 mock 代码里也修改 mock api 的出入参
 - 所有前端页面都不展示数据的ID，如：用户ID、角色ID
+- 主键ID在前端强制使用string类型，避免精度问题
