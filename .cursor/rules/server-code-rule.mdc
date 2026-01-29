@@ -15,4 +15,5 @@ description: This is a rule for server code
 - 服务层实现类 ServiceImpl 类要继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl。
 - 对于 String 或 List Set Map 等集合的判断是否为空，使用 Hutool 的集合工具类方法。
 - Service 层不使用 @RequiredArgsConstructor 注解，使用 @Autowired 注入属性的方式。
-- 分页查询数据库数据使用主键降序排序
+- 分页查询数据库数据使用主键降序排序。
+- Service 层的方法按照：查询、新增、修改、删除，这样的顺序排列方法，方法名相近的放在一起。

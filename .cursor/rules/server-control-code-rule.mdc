@@ -19,3 +19,4 @@ description: This is a rule for controller code
 - 查询所有列表 API 的方法名使用 listAll
 - 查询下拉选项的 API 方法名使用 select
 - Controller  API 的入参不允许使用 Entity，也不允许 Entity 作为出入参的属性中，避免暴露表结构，请根据 API 分别入参类。如：新增的参数定义为 Create 后缀的类，如新增角色，使用 RoleCreate ，修改角色，使用 RoleUpdate。
+- Controller 里的方法按照：查询、新增、修改、删除，这样的顺序排列方法，方法名相近的放在一起。
