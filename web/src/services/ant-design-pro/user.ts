@@ -15,6 +15,10 @@ export type UserItem = {
   gender?: string;
   phone?: string;
   email?: string;
+  /**
+   * 用户头像地址（如果后端暂未返回该字段，则为可选）
+   */
+  avatarUrl?: string;
   lockedFlag?: boolean;
   roles?: RoleItem[];
   depts?: DeptItem[];
@@ -73,8 +77,15 @@ export type UserForm = {
   gender?: string;
   phone?: string;
   email?: string;
+  /**
+   * 用户头像对应的附件ID
+   */
   avatarAttachId?: string;
   deptIds?: string[];
+  /**
+   * 角色ID列表（字符串类型，避免精度问题）
+   */
+  roleIds?: string[];
 };
 
 export async function createUser(body: UserForm) {
@@ -92,6 +103,18 @@ export async function updateUser(userId: string, body: UserForm) {
   return request<Result<void>>(`/api/user/${userId}`, {
     method: 'PUT',
     data: body,
+  });
+}
+
+/**
+ * 给用户分配角色
+ * PUT /api/user/{userId}/roles
+ */
+export async function assignUserRoles(userId: string, roleIds: string[]) {
+  return request<Result<void>>(`/api/user/${userId}/roles`, {
+    method: 'PUT',
+    // 后端接收 List<Long>，这里直接传字符串数组，Spring 会自动转换
+    data: roleIds || [],
   });
 }
 

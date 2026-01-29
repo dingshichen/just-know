@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   ModalForm,
@@ -8,9 +8,14 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Descriptions, Form, Modal, message, Popconfirm, Tag } from 'antd';
+import { Avatar, Button, Descriptions, Form, Modal, Upload, message, Popconfirm, Tag } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-import type { UserForm, UserItem, UserPageParams } from '@/services/ant-design-pro/user';
+import {
+  assignUserRoles,
+  type UserForm,
+  type UserItem,
+  type UserPageParams,
+} from '@/services/ant-design-pro/user';
 import {
   batchDeleteUsers,
   createUser,
@@ -23,11 +28,14 @@ import {
   updateUser,
 } from '@/services/ant-design-pro/user';
 import { listDeptTree, type DeptItem } from '@/services/ant-design-pro/dept';
+import { uploadAttach } from '@/services/ant-design-pro/attach';
+import { pageRoles } from '@/services/ant-design-pro/role';
 
 const Users: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [createForm] = Form.useForm<UserForm>();
   const [currentRow, setCurrentRow] = useState<UserItem | undefined>();
   const [selectedRows, setSelectedRows] = useState<UserItem[]>([]);
   const [deptTree, setDeptTree] = useState<DeptItem[]>([]);
@@ -39,9 +47,13 @@ const Users: React.FC = () => {
   const [detailRow, setDetailRow] = useState<
     | (UserItem & {
         deptNames?: string[];
-      })
+      }) & {
+        avatarUrl?: string;
+      }
     | null
   >(null);
+  const [createAvatarPreviewUrl, setCreateAvatarPreviewUrl] = useState<string | undefined>();
+  const [editAvatarPreviewUrl, setEditAvatarPreviewUrl] = useState<string | undefined>();
 
   // 加载部门树形数据
   useEffect(() => {
@@ -100,22 +112,51 @@ const Users: React.FC = () => {
         phone: currentRow.phone,
         email: currentRow.email,
         deptIds: editDeptIds ?? [],
+        roleIds:
+          currentRow.roles?.map((role) =>
+            role.roleId != null ? role.roleId.toString() : role.roleName,
+          ) ?? [],
       };
       editInitialValuesRef.current = initialValues;
       editForm.setFieldsValue(initialValues as UserForm);
+      setEditAvatarPreviewUrl(currentRow.avatarUrl);
       return;
     }
     editInitialValuesRef.current = null;
     editForm.resetFields();
+    setEditAvatarPreviewUrl(undefined);
   }, [editModalOpen, currentRow, editDeptIds, editForm]);
 
   const handleSubmit = async (values: UserForm, isEdit: boolean) => {
     const hide = message.loading(isEdit ? '正在保存用户信息' : '正在新增用户');
     try {
+      let userId: string | undefined;
+
       if (isEdit && currentRow?.userId) {
         await updateUser(currentRow.userId, values);
+        userId = currentRow.userId;
       } else {
-        await createUser(values);
+        const res = await createUser(values);
+        if (res.code !== 0 || !res.data) {
+          throw new Error(res.msg || '新增用户失败');
+        }
+        // 后端返回的是 Long，这里统一转成字符串
+        userId = res.data.toString();
+      }
+
+      // 处理角色分配（新增和编辑统一走后端 /user/{userId}/roles 接口）
+      if (userId) {
+        const { roleIds } = values;
+        // 如果有选择角色就按选择的角色分配；如果没选且是编辑，则传空数组表示清空角色
+        if ((roleIds && roleIds.length > 0) || isEdit) {
+          const assignRes = await assignUserRoles(
+            userId,
+            (roleIds || []).map((id) => id?.toString?.() ?? id),
+          );
+          if (assignRes.code !== 0) {
+            throw new Error(assignRes.msg || '分配角色失败');
+          }
+        }
       }
       hide();
       message.success(isEdit ? '保存成功' : '新增成功');
@@ -202,7 +243,59 @@ const Users: React.FC = () => {
     }
   };
 
+  const handleAvatarUpload = async (
+    file: File,
+    form: any,
+    setPreview: (url: string | undefined) => void,
+  ) => {
+    try {
+      const res = await uploadAttach(file);
+      if (res.code !== 0 || !res.data) {
+        message.error(res.msg || '上传头像失败，请稍后重试');
+        return false;
+      }
+      const attach = res.data;
+      // 保存附件ID到对应表单，供后端绑定头像
+      form.setFieldsValue({
+        avatarAttachId: attach.attachId?.toString?.() ?? attach.attachId,
+      } as any);
+      // 预览地址优先使用 attachUrl，其次可使用下载接口
+      const url = attach.attachUrl || `/api/attach/download/${attach.attachId}`;
+      setPreview(url);
+      message.success('头像上传成功');
+      return false; // 阻止 Upload 组件自动上传
+    } catch (e) {
+      message.error('上传头像失败，请稍后重试');
+      return false;
+    }
+  };
+
   const columns: ProColumns<UserItem>[] = [
+    {
+      title: '头像',
+      dataIndex: 'avatarUrl',
+      search: false,
+      width: 72,
+      render: (_, record) => {
+        const size = 40;
+        if (record.avatarUrl) {
+          return (
+            <Avatar
+              src={record.avatarUrl}
+              size={size}
+              style={{ verticalAlign: 'middle' }}
+            />
+          );
+        }
+        return (
+          <Avatar
+            icon={<UserOutlined />}
+            size={size}
+            style={{ verticalAlign: 'middle' }}
+          />
+        );
+      },
+    },
     {
       title: '用户姓名',
       dataIndex: 'userName',
@@ -394,6 +487,17 @@ const Users: React.FC = () => {
         }}
       >
         <Descriptions column={1} bordered size="small">
+          <Descriptions.Item label="头像">
+            {detailRow?.avatarUrl ? (
+              <Avatar
+                src={detailRow.avatarUrl}
+                size={64}
+                icon={<UserOutlined />}
+              />
+            ) : (
+              <Avatar size={64} icon={<UserOutlined />} />
+            )}
+          </Descriptions.Item>
           <Descriptions.Item label="用户姓名">
             {detailRow?.userName || '-'}
           </Descriptions.Item>
@@ -461,12 +565,31 @@ const Users: React.FC = () => {
         open={createModalOpen}
         modalProps={{
           destroyOnHidden: true,
-          onCancel: () => setCreateModalOpen(false),
+          onCancel: () => {
+            setCreateModalOpen(false);
+            setCreateAvatarPreviewUrl(undefined);
+            createForm.resetFields();
+          },
         }}
+        form={createForm}
         onFinish={async (values) => {
           return handleSubmit(values, false);
         }}
       >
+        <Form.Item label="头像">
+          <Upload
+            showUploadList={false}
+            beforeUpload={(file) =>
+              handleAvatarUpload(file as any, createForm, setCreateAvatarPreviewUrl)
+            }
+          >
+            <Avatar
+              src={createAvatarPreviewUrl}
+              size={64}
+              icon={<UserOutlined />}
+            />
+          </Upload>
+        </Form.Item>
         <ProFormText
           name="userName"
           label="用户姓名"
@@ -497,6 +620,28 @@ const Users: React.FC = () => {
             treeCheckable: true,
             showCheckedStrategy: 'SHOW_ALL',
             allowClear: true,
+          }}
+        />
+        <ProFormSelect
+          name="roleIds"
+          label="角色"
+          placeholder="请选择角色"
+          fieldProps={{
+            mode: 'multiple',
+          }}
+          request={async () => {
+            try {
+              const res = await pageRoles({ pageNum: 1, pageSize: 100 });
+              if (res.code !== 0 || !res.data) {
+                return [];
+              }
+              return res.data.list.map((role) => ({
+                label: role.roleName,
+                value: role.roleId != null ? role.roleId.toString() : role.roleName,
+              }));
+            } catch {
+              return [];
+            }
           }}
         />
       </ModalForm>
@@ -514,12 +659,27 @@ const Users: React.FC = () => {
             setEditDeptIds([]);
             editInitialValuesRef.current = null;
             editForm.resetFields();
+            setEditAvatarPreviewUrl(undefined);
           },
         }}
         onFinish={async (values) => {
           return handleSubmit(values, true);
         }}
       >
+        <Form.Item label="头像">
+          <Upload
+            showUploadList={false}
+            beforeUpload={(file) =>
+              handleAvatarUpload(file as any, editForm, setEditAvatarPreviewUrl)
+            }
+          >
+            <Avatar
+              src={editAvatarPreviewUrl}
+              size={64}
+              icon={<UserOutlined />}
+            />
+          </Upload>
+        </Form.Item>
         <ProFormText
           name="userName"
           label="用户姓名"
@@ -550,6 +710,28 @@ const Users: React.FC = () => {
             treeCheckable: true,
             showCheckedStrategy: 'SHOW_ALL',
             allowClear: true,
+          }}
+        />
+        <ProFormSelect
+          name="roleIds"
+          label="角色"
+          placeholder="请选择角色"
+          fieldProps={{
+            mode: 'multiple',
+          }}
+          request={async () => {
+            try {
+              const res = await pageRoles({ pageNum: 1, pageSize: 100 });
+              if (res.code !== 0 || !res.data) {
+                return [];
+              }
+              return res.data.list.map((role) => ({
+                label: role.roleName,
+                value: role.roleId != null ? role.roleId.toString() : role.roleName,
+              }));
+            } catch {
+              return [];
+            }
           }}
         />
       </ModalForm>

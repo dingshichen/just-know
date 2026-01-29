@@ -46,6 +46,9 @@ let mockUsers: any[] = [
     gender: '男',
     phone: '13800000000',
     email: 'admin@example.com',
+    // 模拟该用户有头像
+    avatarUrl:
+      'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
     lockedFlag: 0,
     roles: [
       {
@@ -69,6 +72,7 @@ let mockUsers: any[] = [
     gender: '女',
     phone: '13900000000',
     email: 'user@example.com',
+    // 不设置 avatarUrl，前端会展示默认头像图标
     lockedFlag: 0,
     roles: [
       {
@@ -341,7 +345,7 @@ export default {
    * POST /api/user
    */
   'POST /api/user': (req: Request, res: Response) => {
-    const body = req.body || {};
+    const body: any = req.body || {};
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const newUser = {
       userId: userIdSeq++,
@@ -351,6 +355,24 @@ export default {
       phone: body.phone,
       email: body.email,
       lockedFlag: 0,
+      // 模拟头像与部门、角色
+      avatarUrl: body.avatarAttachId
+        ? `/api/attach/download/${body.avatarAttachId}`
+        : undefined,
+      depts:
+        Array.isArray(body.deptIds) && body.deptIds.length > 0
+          ? body.deptIds.map((id: any) => ({
+              deptId: Number(id),
+              deptName: `部门${id}`,
+            }))
+          : [],
+      roles:
+        Array.isArray(body.roleIds) && body.roleIds.length > 0
+          ? body.roleIds.map((id: any) => ({
+              roleId: Number(id),
+              roleName: `角色${id}`,
+            }))
+          : [],
       createdTime: now,
       updatedTime: now,
     };
@@ -369,7 +391,7 @@ export default {
    */
   'PUT /api/user/:userId': (req: Request, res: Response) => {
     const { userId } = req.params;
-    const body = req.body || {};
+    const body: any = req.body || {};
     const idNum = Number(userId);
 
     mockUsers = mockUsers.map((item) => {
@@ -381,6 +403,23 @@ export default {
           gender: body.gender,
           phone: body.phone,
           email: body.email,
+          avatarUrl: body.avatarAttachId
+            ? `/api/attach/download/${body.avatarAttachId}`
+            : item.avatarUrl,
+          depts:
+            Array.isArray(body.deptIds) && body.deptIds.length > 0
+              ? body.deptIds.map((id: any) => ({
+                  deptId: Number(id),
+                  deptName: `部门${id}`,
+                }))
+              : [],
+          roles:
+            Array.isArray(body.roleIds) && body.roleIds.length > 0
+              ? body.roleIds.map((id: any) => ({
+                  roleId: Number(id),
+                  roleName: `角色${id}`,
+                }))
+              : [],
           updatedTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
         };
       }
@@ -438,8 +477,10 @@ export default {
         gender: user.gender,
         phone: user.phone,
         email: user.email,
+        avatarUrl: user.avatarUrl,
         deptIds: (user.depts || []).map((d: any) => String(d.deptId)),
         deptNames: (user.depts || []).map((d: any) => d.deptName),
+        roles: user.roles || [],
       },
     });
   },
@@ -506,6 +547,38 @@ export default {
         ? {
             ...item,
             lockedFlag: 0,
+          }
+        : item,
+    );
+
+    res.send({
+      code: 0,
+      msg: '请求成功',
+      data: null,
+    });
+  },
+
+  /**
+   * 给用户分配角色
+   * PUT /api/user/:userId/roles
+   */
+  'PUT /api/user/:userId/roles': (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const idNum = Number(userId);
+    const body: any = req.body || [];
+    const roleIds: any[] = Array.isArray(body) ? body : [];
+
+    mockUsers = mockUsers.map((item) =>
+      item.userId === idNum
+        ? {
+            ...item,
+            roles:
+              roleIds.length > 0
+                ? roleIds.map((id: any) => ({
+                    roleId: Number(id),
+                    roleName: `角色${id}`,
+                  }))
+                : [],
           }
         : item,
     );
