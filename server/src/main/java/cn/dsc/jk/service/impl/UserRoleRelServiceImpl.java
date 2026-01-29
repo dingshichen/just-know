@@ -32,13 +32,17 @@ public class UserRoleRelServiceImpl extends ServiceImpl<UserRoleRelMapper, UserR
 
     @Override
     public Map<Long, List<RoleOption>> listRoleOptionsMapByUserIds(List<Long> userIds) {
+        // 查询用户角色关系列表
         List<UserRoleRelEntity> relEntities = this.baseMapper.selectByUserIds(userIds);
         if (CollUtil.isEmpty(relEntities)) {
             return new HashMap<>();
         }
+        // 提取出所有角色ID
         List<Long> roleIds = relEntities.stream().map(UserRoleRelEntity::getRoleId).distinct().toList();
+        // 查询角色选项列表
         Map<Long, RoleOption> roleOptionsMap = roleService.mapsByIds(roleIds);
         Map<Long, List<RoleOption>> result = new HashMap<>();
+        // 按用户分组，组装角色选项列表
         relEntities.stream().collect(Collectors.groupingBy(UserRoleRelEntity::getUserId)).forEach((userId, userRelList) -> {
             List<RoleOption> roleOptions = userRelList.stream().map(e -> roleOptionsMap.get(e.getRoleId())).filter(Objects::nonNull).toList();
             result.put(userId, roleOptions);

@@ -7,18 +7,34 @@ import cn.dsc.jk.dto.dept.DeptPageQuery;
 import cn.dsc.jk.dto.dept.DeptOption;
 import cn.dsc.jk.dto.dept.DeptUpdate;
 import cn.dsc.jk.entity.DeptEntity;
-import cn.dsc.jk.service.base.BaseOptionService;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 机构服务接口
  *
  * @author ding.shichen
  */
-public interface DeptService extends IService<DeptEntity>, BaseOptionService<DeptOption> {
+public interface DeptService extends IService<DeptEntity> {
+
+    /**
+     * 根据 ID 列表查询机构选项。
+     *
+     * @param ids ID 列表
+     * @return 机构选项列表
+     */
+    List<DeptOption> selectByIds(List<Long> ids);
+
+    /**
+     * 根据 ID 列表查询机构选项映射。
+     *
+     * @param ids ID 列表
+     * @return ID -> 机构选项 映射
+     */
+    Map<Long, DeptOption> mapsByIds(List<Long> ids);
 
     /**
      * 新增机构

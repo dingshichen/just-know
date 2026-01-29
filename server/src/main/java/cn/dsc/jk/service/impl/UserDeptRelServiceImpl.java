@@ -57,13 +57,17 @@ public class UserDeptRelServiceImpl extends ServiceImpl<UserDeptRelMapper, UserD
 
     @Override
     public Map<Long, List<DeptOption>> listDeptOptionsMapByUserIds(List<Long> userIds) {
+        // 查询用户机构关系列表
         List<UserDeptRelEntity> relEntities = userDeptMapper.selectByUserIds(userIds);
         if (CollUtil.isEmpty(relEntities)) {
             return new HashMap<>();
         }
+        // 提取出所有机构ID
         List<Long> deptIds = relEntities.stream().map(UserDeptRelEntity::getDeptId).distinct().toList();
+        // 查询机构选项列表
         Map<Long, DeptOption> deptOptionsMap = deptService.mapsByIds(deptIds);
         Map<Long, List<DeptOption>> result = new HashMap<>();
+        // 按用户分组，组装机构选项列表
         relEntities.stream().collect(Collectors.groupingBy(UserDeptRelEntity::getUserId)).forEach((userId, userRelList) -> {
             List<DeptOption> deptOptions = userRelList.stream().map(e -> deptOptionsMap.get(e.getDeptId())).filter(Objects::nonNull).toList();
             result.put(userId, deptOptions);

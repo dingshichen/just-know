@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 角色服务实现类
@@ -29,6 +32,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> impleme
     @Override
     public List<RoleOption> selectByIds(List<Long> ids) {
         return this.listByIds(ids).stream().map(RoleConvert.FU_TO_OPTION).toList();
+    }
+
+    @Override
+    public Map<Long, RoleOption> mapsByIds(List<Long> ids) {
+        return this.selectByIds(ids).stream().collect(Collectors.toMap(RoleOption::getRoleId, Function.identity()));
     }
 
     @Override

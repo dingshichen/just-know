@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +38,11 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, DeptEntity> impleme
     @Override
     public List<DeptOption> selectByIds(List<Long> ids) {
         return deptMapper.selectBatchIds(ids).stream().map(DeptConvert.FU_TO_OPTION).toList();
+    }
+
+    @Override
+    public Map<Long, DeptOption> mapsByIds(List<Long> ids) {
+        return this.selectByIds(ids).stream().collect(Collectors.toMap(DeptOption::getDeptId, Function.identity()));
     }
 
     @Override

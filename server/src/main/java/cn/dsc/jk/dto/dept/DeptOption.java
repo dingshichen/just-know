@@ -1,9 +1,7 @@
 package cn.dsc.jk.dto.dept;
 
-import cn.dsc.jk.common.IBase;
 import lombok.Data;
 
-import java.beans.Transient;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -13,7 +11,7 @@ import java.io.Serializable;
  * @author ding.shichen
  */
 @Data
-public class DeptOption implements IBase, Serializable {
+public class DeptOption implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -28,9 +26,4 @@ public class DeptOption implements IBase, Serializable {
      */
     private String deptName;
 
-    @Transient
-    @Override
-    public Long getId() {
-        return this.deptId;
-    }
 }
