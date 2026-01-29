@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("user")
-public class UserEntity {
 
+public class UserEntity {
     /**
      * 用户ID
      */

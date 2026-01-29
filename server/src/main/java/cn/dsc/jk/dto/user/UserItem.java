@@ -39,9 +39,9 @@ public class UserItem extends UserOption {
     private String email;
 
     /**
-     * 锁定标志：0-正常，1-锁定
+     * 锁定标志
      */
-    private Integer lockedFlag;
+    private Boolean lockedFlag;
 
     /**
      * 角色列表

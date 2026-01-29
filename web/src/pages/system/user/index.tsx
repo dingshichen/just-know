@@ -8,7 +8,7 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Avatar, Button, Descriptions, Form, Modal, Upload, message, Popconfirm, Tag } from 'antd';
+import { App, Avatar, Button, Descriptions, Form, Modal, Upload, Popconfirm, Tag } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   assignUserRoles,
@@ -54,6 +54,7 @@ const Users: React.FC = () => {
   >(null);
   const [createAvatarPreviewUrl, setCreateAvatarPreviewUrl] = useState<string | undefined>();
   const [editAvatarPreviewUrl, setEditAvatarPreviewUrl] = useState<string | undefined>();
+  const { message } = App.useApp();
 
   // 加载部门树形数据
   useEffect(() => {
@@ -403,14 +404,13 @@ const Users: React.FC = () => {
         >
           编辑
         </a>,
-        <a
+        <Popconfirm
           key="lock"
-          onClick={() => {
-            handleToggleLock(record);
-          }}
+          title={record.lockedFlag ? '确定要解锁该用户吗？' : '确定要锁定该用户吗？'}
+          onConfirm={() => handleToggleLock(record)}
         >
-          {record.lockedFlag ? '解锁' : '锁定'}
-        </a>,
+          <a>{record.lockedFlag ? '解锁' : '锁定'}</a>
+        </Popconfirm>,
         <Popconfirm
           key="delete"
           title="确定要删除该用户吗？"
@@ -649,7 +649,6 @@ const Users: React.FC = () => {
       <ModalForm<UserForm>
         title="编辑用户"
         open={editModalOpen}
-        initialValues={editInitialValuesRef.current || undefined}
         form={editForm}
         modalProps={{
           destroyOnHidden: true,

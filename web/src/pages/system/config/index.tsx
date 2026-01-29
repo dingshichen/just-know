@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ModalForm, PageContainer, ProFormText, ProTable } from '@ant-design/pro-components';
-import { Card, message } from 'antd';
+import { App, Card } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { SystemConfigItem } from '@/services/ant-design-pro/systemConfig';
 import {
@@ -11,9 +11,10 @@ import useStyles from './style.style';
 
 const SystemConfig: React.FC = () => {
   const { styles } = useStyles();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<SystemConfigItem | undefined>();
+  const { message } = App.useApp();
 
   const handleUpdateValue = async (values: { configValue: string }) => {
     if (!currentRow?.configKey) return false;
@@ -85,7 +86,7 @@ const SystemConfig: React.FC = () => {
 
   return (
     <PageContainer content="系统配置为初始化数据，仅支持修改配置值。">
-      <Card title="配置列表" className={styles.card} bordered={false}>
+      <Card title="配置列表" className={styles.card} variant="borderless">
         <ProTable<SystemConfigItem>
           headerTitle=""
           rowKey="configId"
@@ -108,13 +109,8 @@ const SystemConfig: React.FC = () => {
       <ModalForm<{ configValue: string }>
         title="修改配置值"
         open={editModalOpen}
-        initialValues={{
-          configName: currentRow?.configName,
-          configKey: currentRow?.configKey,
-          configValue: currentRow?.configValue,
-        }}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => {
             setEditModalOpen(false);
             setCurrentRow(undefined);

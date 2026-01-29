@@ -9,7 +9,7 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Descriptions, Modal, message, Popconfirm } from 'antd';
+import { App, Button, Descriptions, Form, Modal, Popconfirm } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import type { DeptForm, DeptItem } from '@/services/ant-design-pro/dept';
 import {
@@ -31,6 +31,8 @@ const Dept: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailRow, setDetailRow] = useState<DeptItem | null>(null);
+  const [editForm] = Form.useForm<DeptForm>();
+  const { message } = App.useApp();
 
   // 加载树形数据
   useEffect(() => {
@@ -129,6 +131,21 @@ const Dept: React.FC = () => {
       setDetailLoading(false);
     }
   };
+
+  // 打开编辑弹窗时填充表单
+  useEffect(() => {
+    if (editModalOpen && currentRow) {
+      editForm.setFieldsValue({
+        deptName: currentRow.deptName,
+        deptCode: currentRow.deptCode,
+        deptDesc: currentRow.deptDesc,
+        parentDeptId: currentRow.parentDeptId,
+        sortNo: currentRow.sortNo ?? 0,
+      } as any);
+    } else {
+      editForm.resetFields();
+    }
+  }, [editModalOpen, currentRow, editForm]);
 
   const columns: ProColumns<DeptItem>[] = [
     {
@@ -289,14 +306,11 @@ const Dept: React.FC = () => {
         title="新建部门"
         open={createModalOpen}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => setCreateModalOpen(false),
         }}
         onFinish={async (values) => {
           return handleSubmit(values, false);
-        }}
-        initialValues={{
-          sortNo: 0,
         }}
       >
         <ProFormText
@@ -313,6 +327,7 @@ const Dept: React.FC = () => {
             min: 0,
             precision: 0,
           }}
+          initialValue={0}
         />
         <ProFormTextArea name="deptDesc" label="机构描述" />
         <ProFormTreeSelect
@@ -330,18 +345,13 @@ const Dept: React.FC = () => {
       <ModalForm<DeptForm>
         title="编辑部门"
         open={editModalOpen}
-        initialValues={{
-          deptName: currentRow?.deptName,
-          deptCode: currentRow?.deptCode,
-          deptDesc: currentRow?.deptDesc,
-          parentDeptId: currentRow?.parentDeptId,
-          sortNo: currentRow?.sortNo ?? 0,
-        }}
+        form={editForm}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
           onCancel: () => {
             setEditModalOpen(false);
             setCurrentRow(undefined);
+            editForm.resetFields();
           },
         }}
         onFinish={async (values) => {
