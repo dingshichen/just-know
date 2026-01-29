@@ -96,6 +96,16 @@ export async function deleteRole(roleId: number) {
 }
 
 /**
+ * 获取角色详情
+ * GET /api/role/{roleId}
+ */
+export async function getRoleDetail(roleId: number) {
+  return request<Result<RoleItem>>(`/api/role/${roleId}`, {
+    method: 'GET',
+  });
+}
+
+/**
  * 批量删除角色
  * DELETE /api/role/batch?roleIds=1&roleIds=2
  */

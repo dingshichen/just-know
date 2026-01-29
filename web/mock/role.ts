@@ -171,5 +171,31 @@ export default {
       data: null,
     });
   },
+
+  /**
+   * 获取角色详情
+   * GET /api/role/:roleId
+   */
+  'GET /api/role/:roleId': async (req: Request, res: Response) => {
+    await waitTime(200);
+    const { roleId } = req.params;
+    const idNum = Number(roleId);
+    const role = mockRoles.find((item) => item.roleId === idNum);
+
+    if (!role) {
+      res.send({
+        code: 1004,
+        msg: '角色不存在',
+        data: null,
+      });
+      return;
+    }
+
+    res.send({
+      code: 0,
+      msg: '请求成功',
+      data: role,
+    });
+  },
 };
 

@@ -263,20 +263,24 @@ export default [
     path: '/system',
     routes: [
       {
-        path: '/system',
-        redirect: '/system/role',
-      },
-      {
         name: 'role',
         icon: 'smile',
         path: '/system/role',
         component: './system/role',
       },
       {
+        path: '/system/role/detail/:roleId',
+        component: './system/role/detail',
+      },
+      {
         name: 'user',
         icon: 'smile',
         path: '/system/user',
         component: './system/user',
+      },
+      {
+        path: '/system/user/detail/:userId',
+        component: './system/user/detail',
       },
       {
         name: 'attach',
@@ -295,6 +299,14 @@ export default [
         icon: 'smile',
         path: '/system/dept',
         component: './system/dept',
+      },
+      {
+        path: '/system/dept/detail/:deptId',
+        component: './system/dept/detail',
+      },
+      {
+        path: '/system',
+        redirect: '/system/role',
       },
     ],
   },

@@ -411,6 +411,40 @@ export default {
   },
 
   /**
+   * 获取用户详情
+   * GET /api/user/:userId
+   */
+  'GET /api/user/:userId': (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const idNum = Number(userId);
+    const user = mockUsers.find((item) => item.userId === idNum);
+
+    if (!user) {
+      res.send({
+        code: 1004,
+        msg: '用户不存在',
+        data: null,
+      });
+      return;
+    }
+
+    res.send({
+      code: 0,
+      msg: '请求成功',
+      data: {
+        userId: String(user.userId),
+        userName: user.userName,
+        account: user.account,
+        gender: user.gender,
+        phone: user.phone,
+        email: user.email,
+        deptIds: (user.depts || []).map((d: any) => String(d.deptId)),
+        deptNames: (user.depts || []).map((d: any) => d.deptName),
+      },
+    });
+  },
+
+  /**
    * 批量删除用户
    * DELETE /api/user/batch?userIds=1&userIds=2
    */

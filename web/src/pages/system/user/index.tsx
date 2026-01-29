@@ -8,13 +8,14 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Form, message, Popconfirm, Tag } from 'antd';
+import { Button, Descriptions, Form, Modal, message, Popconfirm, Tag } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import type { UserForm, UserItem, UserPageParams } from '@/services/ant-design-pro/user';
 import {
   batchDeleteUsers,
   createUser,
   deleteUser,
+  getUserDetail,
   getUserDeptIds,
   lockUser,
   pageUsers,
@@ -33,6 +34,14 @@ const Users: React.FC = () => {
   const [editDeptIds, setEditDeptIds] = useState<string[]>([]);
   const editInitialValuesRef = useRef<Partial<UserForm> | null>(null);
   const [editForm] = Form.useForm<UserForm>();
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailRow, setDetailRow] = useState<
+    | (UserItem & {
+        deptNames?: string[];
+      })
+    | null
+  >(null);
 
   // 加载部门树形数据
   useEffect(() => {
@@ -171,6 +180,28 @@ const Users: React.FC = () => {
     }
   };
 
+  const handleShowDetail = async (row: UserItem) => {
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    try {
+      const res = await getUserDetail(row.userId);
+      if (res.code === 0 && res.data) {
+        const { deptIds, deptNames, ...rest } = res.data as any;
+        setDetailRow({
+          ...(row as any),
+          ...rest,
+          deptNames,
+        });
+      } else {
+        message.error(res.msg || '加载用户详情失败');
+      }
+    } catch (e) {
+      message.error('加载用户详情失败，请稍后重试');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const columns: ProColumns<UserItem>[] = [
     {
       title: '用户姓名',
@@ -184,6 +215,7 @@ const Users: React.FC = () => {
       title: '性别',
       dataIndex: 'gender',
       valueType: 'select',
+      hideInTable: true,
       valueEnum: {
         男: { text: '男' },
         女: { text: '女' },
@@ -196,6 +228,7 @@ const Users: React.FC = () => {
     {
       title: '电子邮箱',
       dataIndex: 'email',
+      hideInTable: true,
     },
     {
       title: '部门',
@@ -208,6 +241,28 @@ const Users: React.FC = () => {
               {dept.deptName}
             </Tag>
           ));
+        }
+        return '-';
+      },
+    },
+    {
+      title: '角色',
+      dataIndex: 'roles',
+      search: false,
+      render: (_, record) => {
+        if (record.roles && record.roles.length > 0) {
+          return record.roles.map((role, index) => {
+            const isAdmin = role.roleName === '系统管理员';
+            return (
+              <Tag
+                key={role.roleId ?? index}
+                color={isAdmin ? 'red' : undefined}
+                style={{ marginRight: 4 }}
+              >
+                {role.roleName}
+              </Tag>
+            );
+          });
         }
         return '-';
       },
@@ -234,16 +289,18 @@ const Users: React.FC = () => {
       search: false,
     },
     {
-      title: '更新时间',
-      dataIndex: 'updatedTime',
-      valueType: 'dateTime',
-      search: false,
-    },
-    {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
+        <a
+          key="detail"
+          onClick={() => {
+            void handleShowDetail(record);
+          }}
+        >
+          详情
+        </a>,
         <a
           key="edit"
           onClick={() => {
@@ -325,6 +382,79 @@ const Users: React.FC = () => {
           pageSize: 10,
         }}
       />
+
+      <Modal
+        title="用户详情"
+        open={detailModalOpen}
+        footer={null}
+        confirmLoading={detailLoading}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setDetailRow(null);
+        }}
+      >
+        <Descriptions column={1} bordered size="small">
+          <Descriptions.Item label="用户姓名">
+            {detailRow?.userName || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="账号">
+            {detailRow?.account || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="性别">
+            {detailRow?.gender || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="手机号码">
+            {detailRow?.phone || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="电子邮箱">
+            {detailRow?.email || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="所属部门">
+            {(() => {
+              const names =
+                (detailRow?.deptNames && detailRow.deptNames.length > 0
+                  ? detailRow.deptNames
+                  : detailRow?.depts?.map((d) => d.deptName)) || [];
+              return names.length > 0
+                ? names.map((name) => (
+                    <Tag key={name} style={{ marginRight: 4 }}>
+                      {name}
+                    </Tag>
+                  ))
+                : '-';
+            })()}
+          </Descriptions.Item>
+          <Descriptions.Item label="角色">
+            {detailRow?.roles && detailRow.roles.length > 0
+              ? detailRow.roles.map((role) => {
+                  const isAdmin = role.roleName === '系统管理员';
+                  return (
+                    <Tag
+                      key={role.roleId ?? role.roleName}
+                      color={isAdmin ? 'red' : undefined}
+                      style={{ marginRight: 4 }}
+                    >
+                      {role.roleName}
+                    </Tag>
+                  );
+                })
+              : '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="锁定状态">
+            {detailRow?.lockedFlag ? (
+              <Tag color="red">已锁定</Tag>
+            ) : (
+              <Tag color="green">正常</Tag>
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label="创建时间">
+            {detailRow?.createdTime || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="更新时间">
+            {detailRow?.updatedTime || '-'}
+          </Descriptions.Item>
+        </Descriptions>
+      </Modal>
 
       <ModalForm<UserForm>
         title="新建用户"

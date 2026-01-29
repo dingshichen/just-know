@@ -7,7 +7,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, Descriptions, Modal, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type {
   RoleForm,
@@ -18,6 +18,7 @@ import {
   batchDeleteRoles,
   createRole,
   deleteRole,
+  getRoleDetail,
   pageRoles,
   updateRole,
 } from '@/services/ant-design-pro/role';
@@ -28,6 +29,9 @@ const Roles: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<RoleItem | undefined>();
   const [selectedRows, setSelectedRows] = useState<RoleItem[]>([]);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailRow, setDetailRow] = useState<RoleItem | undefined>();
 
   const handleSubmit = async (values: RoleForm, isEdit: boolean) => {
     const hide = message.loading(isEdit ? '正在保存角色信息' : '正在新增角色');
@@ -82,6 +86,23 @@ const Roles: React.FC = () => {
     }
   };
 
+  const handleShowDetail = async (record: RoleItem) => {
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    try {
+      const res = await getRoleDetail(record.roleId);
+      if (res.code === 0 && res.data) {
+        setDetailRow(res.data);
+      } else {
+        message.error(res.msg || '加载角色详情失败');
+      }
+    } catch (e) {
+      message.error('加载角色详情失败，请稍后重试');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const columns: ProColumns<RoleItem>[] = [
     {
       title: '角色名称',
@@ -114,6 +135,14 @@ const Roles: React.FC = () => {
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
+        <a
+          key="detail"
+          onClick={() => {
+            void handleShowDetail(record);
+          }}
+        >
+          详情
+        </a>,
         <a
           key="edit"
           onClick={() => {
@@ -187,6 +216,34 @@ const Roles: React.FC = () => {
           pageSize: 10,
         }}
       />
+
+      <Modal
+        title="角色详情"
+        open={detailModalOpen}
+        footer={null}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setDetailRow(undefined);
+        }}
+      >
+        <Descriptions column={1} bordered size="small" loading={detailLoading}>
+          <Descriptions.Item label="角色名称">
+            {detailRow?.roleName || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="角色编码">
+            {detailRow?.roleCode || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="角色描述">
+            {detailRow?.roleDesc || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="创建时间">
+            {detailRow?.createdTime || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="更新时间">
+            {detailRow?.updatedTime || '-'}
+          </Descriptions.Item>
+        </Descriptions>
+      </Modal>
 
       <ModalForm<RoleForm>
         title="新建角色"

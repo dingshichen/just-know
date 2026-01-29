@@ -9,24 +9,28 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, Descriptions, Modal, message, Popconfirm } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import type { DeptForm, DeptItem } from '@/services/ant-design-pro/dept';
 import {
   batchDeleteDepts,
   createDept,
   deleteDept,
+  getDeptDetail,
   listDeptTree,
   updateDept,
 } from '@/services/ant-design-pro/dept';
 
 const Dept: React.FC = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<DeptItem | undefined>();
   const [selectedRows, setSelectedRows] = useState<DeptItem[]>([]);
   const [treeData, setTreeData] = useState<DeptItem[]>([]);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailRow, setDetailRow] = useState<DeptItem | null>(null);
 
   // 加载树形数据
   useEffect(() => {
@@ -109,6 +113,23 @@ const Dept: React.FC = () => {
     }
   };
 
+  const handleShowDetail = async (row: DeptItem) => {
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    try {
+      const res = await getDeptDetail(row.deptId);
+      if (res.code === 0 && res.data) {
+        setDetailRow(res.data);
+      } else {
+        message.error(res.msg || '加载机构详情失败');
+      }
+    } catch (e) {
+      message.error('加载机构详情失败，请稍后重试');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const columns: ProColumns<DeptItem>[] = [
     {
       title: '机构名称',
@@ -147,6 +168,14 @@ const Dept: React.FC = () => {
       valueType: 'option',
       width: 150,
       render: (_, record) => [
+        <a
+          key="detail"
+          onClick={() => {
+            void handleShowDetail(record);
+          }}
+        >
+          详情
+        </a>,
         <a
           key="edit"
           onClick={() => {
@@ -220,6 +249,41 @@ const Dept: React.FC = () => {
         defaultExpandAllRows
         childrenColumnName="children"
       />
+
+      <Modal
+        title="机构详情"
+        open={detailModalOpen}
+        footer={null}
+        confirmLoading={detailLoading}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setDetailRow(null);
+        }}
+      >
+        <Descriptions column={1} bordered size="small">
+          <Descriptions.Item label="机构名称">
+            {detailRow?.deptName || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="机构编码">
+            {detailRow?.deptCode || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="机构描述">
+            {detailRow?.deptDesc || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="上级机构ID">
+            {detailRow?.parentDeptId || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="顺序编号">
+            {detailRow?.sortNo ?? '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="创建时间">
+            {detailRow?.createdTime || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="更新时间">
+            {detailRow?.updatedTime || '-'}
+          </Descriptions.Item>
+        </Descriptions>
+      </Modal>
 
       <ModalForm<DeptForm>
         title="新建部门"

@@ -123,3 +123,13 @@ export async function batchDeleteDepts(deptIds: string[]) {
     },
   });
 }
+
+/**
+ * 获取机构详情
+ * GET /api/dept/{deptId}
+ */
+export async function getDeptDetail(deptId: string) {
+  return request<Result<DeptItem>>(`/api/dept/${deptId}`, {
+    method: 'GET',
+  });
+}
