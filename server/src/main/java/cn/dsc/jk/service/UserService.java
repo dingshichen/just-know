@@ -96,4 +96,11 @@ public interface UserService extends IService<UserEntity>, UserDetailsService {
      * @return 用户简单详情，不存在时返回 null
      */
     UserSimpleDetail loadSimpleDetail(Long userId);
+
+    /**
+     * 重置用户密码为默认密码 123456
+     *
+     * @param userId 用户ID
+     */
+    void resetPassword(Long userId);
 }

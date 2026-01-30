@@ -1,9 +1,10 @@
 package cn.dsc.jk.service.impl;
 
 import cn.dsc.jk.common.SecurityConstant;
+import cn.dsc.jk.exception.BizException;
+import cn.dsc.jk.dto.attach.AttachOption;
 import cn.dsc.jk.dto.dept.DeptOption;
 import cn.dsc.jk.dto.permission.GrantedAuthorityPermission;
-import cn.dsc.jk.dto.role.RoleConvert;
 import cn.dsc.jk.dto.role.RoleOption;
 import cn.dsc.jk.dto.user.UserConvert;
 import cn.dsc.jk.dto.user.UserCreate;
@@ -12,12 +13,13 @@ import cn.dsc.jk.dto.user.UserItem;
 import cn.dsc.jk.dto.user.UserPageQuery;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
-import cn.dsc.jk.entity.RoleEntity;
 import cn.dsc.jk.entity.UserEntity;
 import cn.dsc.jk.entity.UserRoleRelEntity;
 import cn.dsc.jk.mapper.UserMapper;
+import cn.dsc.jk.service.AttachService;
 import cn.dsc.jk.service.DeptService;
 import cn.dsc.jk.service.RoleService;
+import cn.dsc.jk.service.UserCredentialService;
 import cn.dsc.jk.service.UserDeptRelService;
 import cn.dsc.jk.service.UserRelRoleService;
 import cn.dsc.jk.service.UserService;
@@ -30,12 +32,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -58,6 +62,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
 
     @Autowired
     private DeptService deptService;
+
+    @Autowired
+    private AttachService attachService;
+
+    @Autowired
+    private UserCredentialService userCredentialService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -84,6 +97,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             entity.setLockedFlag(false);
         }
         this.save(entity);
+
+        // 写入默认密码 123456
+        userCredentialService.setPassword(entity.getUserId(), passwordEncoder.encode(SecurityConstant.DEFAULT_PASSWORD));
 
         // 处理部门关联
         if (CollUtil.isNotEmpty(create.getDeptIds())) {
@@ -128,6 +144,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Override
     @Transactional
     public void delete(Long userId) {
+        UserEntity entity = this.getById(userId);
+        if (entity != null && SecurityConstant.SYS_ADMIN_ACCOUNT.equals(entity.getAccount())) {
+            throw new BizException("不能对系统管理员进行删除操作");
+        }
         // 删除用户角色关系
         userRoleRelService.deleteByUserId(userId);
         // 删除用户部门关系
@@ -141,6 +161,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     public void deleteBatch(List<Long> userIds) {
         if (CollUtil.isEmpty(userIds)) {
             return;
+        }
+        for (Long userId : userIds) {
+            UserEntity entity = this.getById(userId);
+            if (entity != null && SecurityConstant.SYS_ADMIN_ACCOUNT.equals(entity.getAccount())) {
+                throw new BizException("不能对系统管理员进行删除操作");
+            }
         }
         // 批量删除用户角色关系
         for (Long userId : userIds) {
@@ -175,6 +201,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             detail.setDepts(deptService.selectByIds(deptIds));
         }
 
+        // 加载用户头像
+        AttachOption avatar = attachService.getOptionById(entity.getAvatarAttachId());
+        detail.setAvatar(avatar);
+
         return detail;
     }
 
@@ -186,7 +216,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 query.getAccount(),
                 query.getPhone(),
                 query.getEmail(),
-                query.getLockedFlag()
+                query.getLockedFlag(),
+                query.getRoleIds(),
+                query.getDeptIds()
         );
         List<UserItem> items = entities.stream()
                 .map(UserConvert.FU_TO_ITEM)
@@ -206,6 +238,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             List<DeptOption> depts = deptOptionsMap.get(item.getUserId());
             item.setDepts(depts);
         });
+
+        // 提取用户头像
+        List<Long> avatarAttachIds = entities.stream().map(UserEntity::getAvatarAttachId).filter(Objects::nonNull).toList();
+        if (CollUtil.isNotEmpty(avatarAttachIds)) {
+            // 加载附件
+            Map<Long, AttachOption> attachOptionMap = attachService.selectByIds(avatarAttachIds).stream().collect(Collectors.toMap(AttachOption::getAttachId, Function.identity()));
+            // 组装头像
+            Map<Long, Long> avatarMap = entities.stream().filter(e -> e.getAvatarAttachId() != null).collect(Collectors.toMap(UserEntity::getUserId, UserEntity::getAvatarAttachId));
+            items.forEach(item -> {
+                Long avatarAttachId = avatarMap.get(item.getUserId());
+                item.setAvatar(attachOptionMap.get(avatarAttachId));
+            });
+        }
         return new PageInfo<>(items);
     }
 
@@ -215,6 +260,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         UserEntity entity = this.getById(userId);
         if (entity == null) {
             return;
+        }
+        if (SecurityConstant.SYS_ADMIN_ACCOUNT.equals(entity.getAccount())) {
+            throw new BizException("不能对系统管理员进行锁定操作");
         }
         entity.setLockedFlag(true);
         this.updateById(entity);
@@ -226,6 +274,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         UserEntity entity = this.getById(userId);
         if (entity == null) {
             return;
+        }
+        if (SecurityConstant.SYS_ADMIN_ACCOUNT.equals(entity.getAccount())) {
+            throw new BizException("不能对系统管理员进行解锁操作");
         }
         entity.setLockedFlag(false);
         this.updateById(entity);
@@ -262,5 +313,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 .anyMatch(a -> SecurityConstant.SYS_ADMIN_ROLE_CODE.equals(a.getPermissionCode()));
         detail.setAccess(hasAdmin ? "admin" : null);
         return detail;
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(Long userId) {
+        UserEntity entity = this.getById(userId);
+        if (entity == null) {
+            return;
+        }
+        if (SecurityConstant.SYS_ADMIN_ACCOUNT.equals(entity.getAccount())) {
+            throw new BizException("不能对系统管理员进行重置密码操作");
+        }
+        userCredentialService.setPassword(userId, passwordEncoder.encode(SecurityConstant.DEFAULT_PASSWORD));
     }
 }

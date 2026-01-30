@@ -24,13 +24,17 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @param phone       手机号码（模糊查询）
      * @param email       电子邮箱（模糊查询）
      * @param lockedFlag  锁定标志：0-正常，1-锁定
+     * @param roleIds     角色ID列表（多选，拥有任一即符合）
+     * @param deptIds     部门ID列表（多选，属于任一即符合）
      * @return 用户列表
      */
     List<UserEntity> selectList(@Param("userName") String userName,
                                 @Param("account") String account,
                                 @Param("phone") String phone,
                                 @Param("email") String email,
-                                @Param("lockedFlag") Boolean lockedFlag);
+                                @Param("lockedFlag") Boolean lockedFlag,
+                                @Param("roleIds") List<Long> roleIds,
+                                @Param("deptIds") List<Long> deptIds);
 
     /**
      * 根据账号查询用户简单详情（包含凭证信息）

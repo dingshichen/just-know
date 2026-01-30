@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import cn.dsc.jk.dto.attach.AttachOption;
 import cn.dsc.jk.dto.dept.DeptOption;
 import cn.dsc.jk.dto.role.RoleOption;
 
@@ -42,6 +43,11 @@ public class UserItem extends UserOption {
      * 锁定标志
      */
     private Boolean lockedFlag;
+
+    /**
+     * 头像
+     */
+    private AttachOption avatar;
 
     /**
      * 角色列表

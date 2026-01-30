@@ -25,4 +25,9 @@ public class AttachOption implements Serializable {
      * 标题
      */
     private String title;
+    
+    /**
+     * 附件URL
+     */
+    private String attachUrl;
 }

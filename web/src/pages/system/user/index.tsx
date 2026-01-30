@@ -8,7 +8,20 @@ import {
   ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Avatar, Button, Descriptions, Form, Modal, Upload, Popconfirm, Tag } from 'antd';
+import {
+  App,
+  Avatar,
+  Button,
+  Descriptions,
+  Dropdown,
+  Form,
+  Modal,
+  Upload,
+  Popconfirm,
+  Tag,
+} from 'antd';
+import type { MenuProps } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   assignUserRoles,
@@ -24,6 +37,7 @@ import {
   getUserDeptIds,
   lockUser,
   pageUsers,
+  resetUserPassword,
   unlockUser,
   updateUser,
 } from '@/services/ant-design-pro/user';
@@ -45,16 +59,22 @@ const Users: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailRow, setDetailRow] = useState<
-    | (UserItem & {
-        deptNames?: string[];
-      }) & {
-        avatarUrl?: string;
-      }
+    | (UserItem & { deptNames?: string[]; avatarAttachId?: number })
     | null
   >(null);
   const [createAvatarPreviewUrl, setCreateAvatarPreviewUrl] = useState<string | undefined>();
   const [editAvatarPreviewUrl, setEditAvatarPreviewUrl] = useState<string | undefined>();
   const { message } = App.useApp();
+
+  /** 根据附件ID生成头像展示/预览地址（同源，走代理） */
+  const getAvatarUrl = (attachId: string) => `/api/attach/download/${attachId}`;
+
+  /** 从用户项（含 avatar: AttachOption）或详情中解析出头像展示 URL */
+  const getDisplayAvatarUrl = (row: { avatar?: { attachId?: string } } | null) => {
+    if (!row) return undefined;
+    if (row.avatar?.attachId != null) return getAvatarUrl(row.avatar.attachId);
+    return undefined;
+  };
 
   // 加载部门树形数据
   useEffect(() => {
@@ -106,12 +126,17 @@ const Users: React.FC = () => {
   // 打开编辑弹窗时回填基础字段（部门在另一个 effect 异步回填）
   useEffect(() => {
     if (editModalOpen && currentRow) {
+      const avatarAttachId =
+        currentRow.avatar?.attachId != null
+          ? String(currentRow.avatar.attachId)
+          : undefined;
       const initialValues: Partial<UserForm> = {
         userName: currentRow.userName,
         account: currentRow.account ?? '',
         gender: currentRow.gender,
         phone: currentRow.phone,
         email: currentRow.email,
+        avatarAttachId,
         deptIds: editDeptIds ?? [],
         roleIds:
           currentRow.roles?.map((role) =>
@@ -120,7 +145,7 @@ const Users: React.FC = () => {
       };
       editInitialValuesRef.current = initialValues;
       editForm.setFieldsValue(initialValues as UserForm);
-      setEditAvatarPreviewUrl(currentRow.avatarUrl);
+      setEditAvatarPreviewUrl(getDisplayAvatarUrl(currentRow as any));
       return;
     }
     editInitialValuesRef.current = null;
@@ -176,8 +201,12 @@ const Users: React.FC = () => {
   const handleDelete = async (row: UserItem) => {
     const hide = message.loading('正在删除用户');
     try {
-      await deleteUser(row.userId);
+      const res = await deleteUser(row.userId);
       hide();
+      if (res.code !== 0) {
+        message.error(res.msg || '删除失败，请稍后重试');
+        return;
+      }
       message.success('删除成功');
       actionRef.current?.reloadAndRest?.();
     } catch (e) {
@@ -191,10 +220,22 @@ const Users: React.FC = () => {
       message.warning('请先选择要删除的用户');
       return;
     }
+    const toDelete = selectedRows.filter((item) => item.account !== 'admin');
+    if (toDelete.length === 0) {
+      message.warning('不能删除系统管理员，请重新选择');
+      return;
+    }
+    if (toDelete.length < selectedRows.length) {
+      message.info('已排除系统管理员，仅删除所选其他用户');
+    }
     const hide = message.loading('正在批量删除用户');
     try {
-      await batchDeleteUsers(selectedRows.map((item) => item.userId));
+      const res = await batchDeleteUsers(toDelete.map((item) => item.userId));
       hide();
+      if (res.code !== 0) {
+        message.error(res.msg || '批量删除失败，请稍后重试');
+        return;
+      }
       message.success('批量删除成功');
       setSelectedRows([]);
       actionRef.current?.reloadAndRest?.();
@@ -208,17 +249,36 @@ const Users: React.FC = () => {
     const isLocked = row.lockedFlag === true;
     const hide = message.loading(isLocked ? '正在解锁用户' : '正在锁定用户');
     try {
-      if (isLocked) {
-        await unlockUser(row.userId);
-      } else {
-        await lockUser(row.userId);
-      }
+      const res = isLocked
+        ? await unlockUser(row.userId)
+        : await lockUser(row.userId);
       hide();
+      if (res.code !== 0) {
+        message.error(res.msg || (isLocked ? '解锁失败，请稍后重试' : '锁定失败，请稍后重试'));
+        return;
+      }
       message.success(row.lockedFlag ? '解锁成功' : '锁定成功');
       actionRef.current?.reload();
     } catch (e) {
       hide();
       message.error(isLocked ? '解锁失败，请稍后重试' : '锁定失败，请稍后重试');
+    }
+  };
+
+  const handleResetPassword = async (row: UserItem) => {
+    const hide = message.loading('正在重置密码');
+    try {
+      const res = await resetUserPassword(row.userId);
+      hide();
+      if (res.code !== 0) {
+        message.error(res.msg || '重置密码失败，请稍后重试');
+        return;
+      }
+      message.success('密码已重置为 123456');
+      actionRef.current?.reload();
+    } catch (e) {
+      hide();
+      message.error('重置密码失败，请稍后重试');
     }
   };
 
@@ -256,12 +316,13 @@ const Users: React.FC = () => {
         return false;
       }
       const attach = res.data;
-      // 保存附件ID到对应表单，供后端绑定头像
+      const attachId = attach.attachId?.toString?.() ?? attach.attachId;
+      // 保存附件ID到表单（隐藏项会随表单提交）
       form.setFieldsValue({
-        avatarAttachId: attach.attachId?.toString?.() ?? attach.attachId,
+        avatarAttachId: attachId,
       } as any);
-      // 预览地址优先使用 attachUrl，其次可使用下载接口
-      const url = attach.attachUrl || `/api/attach/download/${attach.attachId}`;
+      // 使用同源下载地址作为预览，确保能正确展示
+      const url = getAvatarUrl(attach.attachId);
       setPreview(url);
       message.success('头像上传成功');
       return false; // 阻止 Upload 组件自动上传
@@ -274,15 +335,16 @@ const Users: React.FC = () => {
   const columns: ProColumns<UserItem>[] = [
     {
       title: '头像',
-      dataIndex: 'avatarUrl',
+      dataIndex: 'avatar',
       search: false,
       width: 72,
       render: (_, record) => {
         const size = 40;
-        if (record.avatarUrl) {
+        const src = getDisplayAvatarUrl(record as any);
+        if (src) {
           return (
             <Avatar
-              src={record.avatarUrl}
+              src={src}
               size={size}
               style={{ verticalAlign: 'middle' }}
             />
@@ -306,13 +368,39 @@ const Users: React.FC = () => {
       dataIndex: 'account',
     },
     {
-      title: '性别',
-      dataIndex: 'gender',
+      title: '角色',
+      dataIndex: 'roleIds',
       valueType: 'select',
       hideInTable: true,
-      valueEnum: {
-        男: { text: '男' },
-        女: { text: '女' },
+      fieldProps: {
+        mode: 'multiple',
+        placeholder: '请选择角色',
+      },
+      request: async () => {
+        try {
+          const res = await pageRoles({ pageNum: 1, pageSize: 100 });
+          if (res.code !== 0 || !res.data) return [];
+          return res.data.list.map((role) => ({
+            label: role.roleName,
+            value: role.roleId != null ? role.roleId.toString() : role.roleName,
+          }));
+        } catch {
+          return [];
+        }
+      },
+    },
+    {
+      title: '部门',
+      dataIndex: 'deptIds',
+      valueType: 'treeSelect',
+      hideInTable: true,
+      fieldProps: {
+        multiple: true,
+        placeholder: '请选择部门',
+        treeData: convertDeptTreeToOptions(deptTree),
+        treeCheckable: true,
+        showCheckedStrategy: 'SHOW_ALL',
+        allowClear: true,
       },
     },
     {
@@ -386,39 +474,73 @@ const Users: React.FC = () => {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="detail"
-          onClick={() => {
-            void handleShowDetail(record);
-          }}
-        >
-          详情
-        </a>,
-        <a
-          key="edit"
-          onClick={() => {
-            setCurrentRow(record);
-            setEditModalOpen(true);
-          }}
-        >
-          编辑
-        </a>,
-        <Popconfirm
-          key="lock"
-          title={record.lockedFlag ? '确定要解锁该用户吗？' : '确定要锁定该用户吗？'}
-          onConfirm={() => handleToggleLock(record)}
-        >
-          <a>{record.lockedFlag ? '解锁' : '锁定'}</a>
-        </Popconfirm>,
-        <Popconfirm
-          key="delete"
-          title="确定要删除该用户吗？"
-          onConfirm={() => handleDelete(record)}
-        >
-          <a>删除</a>
-        </Popconfirm>,
-      ],
+      render: (_, record) => {
+        const isSystemAdmin = record.account === 'admin';
+        const moreItems: MenuProps['items'] = !isSystemAdmin
+          ? [
+              {
+                key: 'lock',
+                label: record.lockedFlag ? '解锁' : '锁定',
+                onClick: () => {
+                  Modal.confirm({
+                    title: record.lockedFlag ? '确定要解锁该用户吗？' : '确定要锁定该用户吗？',
+                    onOk: () => handleToggleLock(record),
+                  });
+                },
+              },
+              {
+                key: 'resetPassword',
+                label: '重置密码',
+                onClick: () => {
+                  Modal.confirm({
+                    title: '确定要将该用户密码重置为 123456 吗？',
+                    onOk: () => handleResetPassword(record),
+                  });
+                },
+              },
+              { type: 'divider' },
+              {
+                key: 'delete',
+                danger: true,
+                label: '删除',
+                onClick: () => {
+                  Modal.confirm({
+                    title: '确定要删除该用户吗？',
+                    okText: '确定',
+                    okType: 'danger',
+                    onOk: () => handleDelete(record),
+                  });
+                },
+              },
+            ]
+          : [];
+        return [
+          <a
+            key="detail"
+            onClick={() => {
+              void handleShowDetail(record);
+            }}
+          >
+            详情
+          </a>,
+          <a
+            key="edit"
+            onClick={() => {
+              setCurrentRow(record);
+              setEditModalOpen(true);
+            }}
+          >
+            编辑
+          </a>,
+          moreItems.length > 0 ? (
+            <Dropdown key="more" menu={{ items: moreItems }} trigger={['click']}>
+              <a onClick={(e) => e.preventDefault()}>
+                更多 <DownOutlined />
+              </a>
+            </Dropdown>
+          ) : null,
+        ];
+      },
     },
   ];
 
@@ -488,9 +610,9 @@ const Users: React.FC = () => {
       >
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label="头像">
-            {detailRow?.avatarUrl ? (
+            {getDisplayAvatarUrl(detailRow) ? (
               <Avatar
-                src={detailRow.avatarUrl}
+                src={getDisplayAvatarUrl(detailRow)}
                 size={64}
                 icon={<UserOutlined />}
               />
@@ -576,6 +698,9 @@ const Users: React.FC = () => {
           return handleSubmit(values, false);
         }}
       >
+        <Form.Item name="avatarAttachId" hidden>
+          <input type="hidden" />
+        </Form.Item>
         <Form.Item label="头像">
           <Upload
             showUploadList={false}
@@ -665,6 +790,9 @@ const Users: React.FC = () => {
           return handleSubmit(values, true);
         }}
       >
+        <Form.Item name="avatarAttachId" hidden>
+          <input type="hidden" />
+        </Form.Item>
         <Form.Item label="头像">
           <Upload
             showUploadList={false}

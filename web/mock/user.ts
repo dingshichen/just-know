@@ -299,26 +299,47 @@ export default {
    * GET /api/user/page
    */
   'GET /api/user/page': (req: Request, res: Response) => {
-    const { pageNum = '1', pageSize = '10', userName, account, phone, email, lockedFlag } =
-      req.query as Record<string, string>;
+    const {
+      pageNum = '1',
+      pageSize = '10',
+      userName,
+      account,
+      phone,
+      email,
+      lockedFlag,
+      roleIds,
+      deptIds,
+    } = req.query as Record<string, string | string[]>;
 
     let data = [...mockUsers];
 
     if (userName) {
-      data = data.filter((item) => item.userName?.includes(userName));
+      data = data.filter((item) => item.userName?.includes(String(userName)));
     }
     if (account) {
-      data = data.filter((item) => item.account?.includes(account));
+      data = data.filter((item) => item.account?.includes(String(account)));
     }
     if (phone) {
-      data = data.filter((item) => item.phone?.includes(phone));
+      data = data.filter((item) => item.phone?.includes(String(phone)));
     }
     if (email) {
-      data = data.filter((item) => item.email?.includes(email));
+      data = data.filter((item) => item.email?.includes(String(email)));
     }
     if (lockedFlag !== undefined && lockedFlag !== '') {
       const flag = Number(lockedFlag);
       data = data.filter((item) => item.lockedFlag === flag);
+    }
+    if (roleIds && (Array.isArray(roleIds) ? roleIds.length > 0 : roleIds)) {
+      const ids = Array.isArray(roleIds) ? roleIds.map(Number) : String(roleIds).split(',').map(Number);
+      data = data.filter((item) =>
+        (item.roles || []).some((r: any) => ids.includes(Number(r.roleId))),
+      );
+    }
+    if (deptIds && (Array.isArray(deptIds) ? deptIds.length > 0 : deptIds)) {
+      const ids = Array.isArray(deptIds) ? deptIds.map(Number) : String(deptIds).split(',').map(Number);
+      data = data.filter((item) =>
+        (item.depts || []).some((d: any) => ids.includes(Number(d.deptId))),
+      );
     }
 
     const pageNumNum = Number(pageNum) || 1;
@@ -440,6 +461,15 @@ export default {
   'DELETE /api/user/:userId': (req: Request, res: Response) => {
     const { userId } = req.params;
     const idNum = Number(userId);
+    const user = mockUsers.find((item) => item.userId === idNum);
+    if (user?.account === 'admin') {
+      res.send({
+        code: -1,
+        msg: '不能对系统管理员进行删除操作',
+        data: null,
+      });
+      return;
+    }
     mockUsers = mockUsers.filter((item) => item.userId !== idNum);
 
     res.send({
@@ -501,6 +531,16 @@ export default {
         .map((id) => Number(id));
     }
 
+    const adminUser = mockUsers.find((u) => u.account === 'admin');
+    if (adminUser && ids.includes(adminUser.userId)) {
+      res.send({
+        code: -1,
+        msg: '不能对系统管理员进行删除操作',
+        data: null,
+      });
+      return;
+    }
+
     if (ids.length > 0) {
       mockUsers = mockUsers.filter((item) => !ids.includes(item.userId));
     }
@@ -519,6 +559,15 @@ export default {
   'PUT /api/user/:userId/lock': (req: Request, res: Response) => {
     const { userId } = req.params;
     const idNum = Number(userId);
+    const user = mockUsers.find((item) => item.userId === idNum);
+    if (user?.account === 'admin') {
+      res.send({
+        code: -1,
+        msg: '不能对系统管理员进行锁定操作',
+        data: null,
+      });
+      return;
+    }
     mockUsers = mockUsers.map((item) =>
       item.userId === idNum
         ? {
@@ -536,12 +585,44 @@ export default {
   },
 
   /**
+   * 重置用户密码为默认密码 123456
+   * PUT /api/user/:userId/reset-password
+   */
+  'PUT /api/user/:userId/reset-password': (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const idNum = Number(userId);
+    const user = mockUsers.find((item) => item.userId === idNum);
+    if (user?.account === 'admin') {
+      res.send({
+        code: -1,
+        msg: '不能对系统管理员进行重置密码操作',
+        data: null,
+      });
+      return;
+    }
+    res.send({
+      code: 0,
+      msg: '请求成功',
+      data: null,
+    });
+  },
+
+  /**
    * 解锁用户
    * PUT /api/user/:userId/unlock
    */
   'PUT /api/user/:userId/unlock': (req: Request, res: Response) => {
     const { userId } = req.params;
     const idNum = Number(userId);
+    const user = mockUsers.find((item) => item.userId === idNum);
+    if (user?.account === 'admin') {
+      res.send({
+        code: -1,
+        msg: '不能对系统管理员进行解锁操作',
+        data: null,
+      });
+      return;
+    }
     mockUsers = mockUsers.map((item) =>
       item.userId === idNum
         ? {

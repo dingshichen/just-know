@@ -7,9 +7,9 @@ import { request } from '@umijs/max';
  * 对应后端的 SystemConfigItem DTO
  */
 export type SystemConfigItem = {
-  configId: number;
+  configId?: number;
   configName: string;
-  configKey?: string;
+  configKey: string;
   configValue?: string;
   configDesc?: string;
   createdTime?: string;

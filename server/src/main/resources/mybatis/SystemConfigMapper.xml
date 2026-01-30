@@ -3,6 +3,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.dsc.jk.mapper.SystemConfigMapper">
 
+    <!-- 根据配置键查询一条 -->
+    <select id="selectByConfigKey" resultType="cn.dsc.jk.entity.SystemConfigEntity">
+        SELECT config_id, config_name, config_key, config_value, config_desc,
+               created_user_id, updated_user_id, created_time, updated_time
+        FROM system_config
+        WHERE config_key = #{configKey}
+        LIMIT 1
+    </select>
+
     <!-- 根据配置键更新配置值 -->
     <update id="updateValueByKey">
         UPDATE system_config

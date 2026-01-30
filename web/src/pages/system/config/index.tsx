@@ -1,28 +1,54 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { ModalForm, PageContainer, ProFormText, ProTable } from '@ant-design/pro-components';
-import { App, Card } from 'antd';
+import {
+  ModalForm,
+  PageContainer,
+  ProFormDigit,
+  ProFormSelect,
+  ProFormText,
+  ProTable,
+} from '@ant-design/pro-components';
+import { App } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { SystemConfigItem } from '@/services/ant-design-pro/systemConfig';
 import {
   listSystemConfigs,
   updateSystemConfigValue,
 } from '@/services/ant-design-pro/systemConfig';
-import useStyles from './style.style';
+
+/** 与后端 SystemConfigKey 对齐的配置键 */
+const CONFIG_KEY = {
+  USER_FORCE_CHANGE_PASSWORD: 'user.force_change_password_on_first_login',
+  PASSWORD_ENCODER: 'security.password_encoder',
+  USER_LOGIN_EXPIRE_HOURS: 'user.login.expire_hours',
+} as const;
+
+const FORCE_CHANGE_OPTIONS = [
+  { label: '是', value: 'true' },
+  { label: '否', value: 'false' },
+];
+
+const PASSWORD_ENCODER_OPTIONS = [
+  { label: 'bcrypt', value: 'bcrypt' },
+  { label: 'pbkdf2', value: 'pbkdf2' },
+  { label: 'scrypt', value: 'scrypt' },
+  { label: 'argon2', value: 'argon2' },
+  { label: 'noop', value: 'noop' },
+];
 
 const SystemConfig: React.FC = () => {
-  const { styles } = useStyles();
   const actionRef = useRef<ActionType>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<SystemConfigItem | undefined>();
   const { message } = App.useApp();
 
-  const handleUpdateValue = async (values: { configValue: string }) => {
+  const handleUpdateValue = async (values: { configValue: string | number }) => {
     if (!currentRow?.configKey) return false;
+    const configValue = values.configValue == null ? '' : String(values.configValue);
     const hide = message.loading('正在保存配置值');
     try {
       await updateSystemConfigValue({
         configKey: currentRow.configKey,
-        configValue: values.configValue,
+        configValue,
       });
       hide();
       message.success('保存成功');
@@ -85,30 +111,36 @@ const SystemConfig: React.FC = () => {
   ];
 
   return (
-    <PageContainer content="系统配置为初始化数据，仅支持修改配置值。">
-      <Card title="配置列表" className={styles.card} variant="borderless">
-        <ProTable<SystemConfigItem>
-          headerTitle=""
-          rowKey="configId"
-          actionRef={actionRef}
-          columns={columns}
-          search={false}
-          pagination={false}
-          request={async () => {
-            const res = await listSystemConfigs();
-            const list = res.data || [];
-            return {
-              data: list,
-              success: res.code === 0,
-              total: list.length,
-            };
-          }}
-        />
-      </Card>
+    <PageContainer>
+      <ProTable<SystemConfigItem>
+        headerTitle="系统配置"
+        rowKey="configKey"
+        actionRef={actionRef}
+        columns={columns}
+        search={false}
+        pagination={false}
+        request={async () => {
+          const res = await listSystemConfigs();
+          const list = res.data || [];
+          return {
+            data: list,
+            success: res.code === 0,
+            total: list.length,
+          };
+        }}
+      />
 
-      <ModalForm<{ configValue: string }>
+      <ModalForm<{ configValue: string | number }>
         title="修改配置值"
         open={editModalOpen}
+        initialValues={{
+          configName: currentRow?.configName,
+          configKey: currentRow?.configKey,
+          configValue:
+            currentRow?.configKey === CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS
+              ? (currentRow?.configValue ? Number(currentRow.configValue) : undefined)
+              : currentRow?.configValue,
+        }}
         modalProps={{
           destroyOnHidden: true,
           onCancel: () => {
@@ -122,12 +154,46 @@ const SystemConfig: React.FC = () => {
       >
         <ProFormText name="configName" label="配置名称" disabled />
         <ProFormText name="configKey" label="配置键" disabled />
-        <ProFormText
-          name="configValue"
-          label="配置值"
-          rules={[{ required: true, message: '请输入配置值' }]}
-          placeholder="请输入配置值"
-        />
+        {currentRow?.configKey === CONFIG_KEY.USER_FORCE_CHANGE_PASSWORD && (
+          <ProFormSelect
+            name="configValue"
+            label="配置值"
+            rules={[{ required: true, message: '请选择' }]}
+            options={FORCE_CHANGE_OPTIONS}
+            placeholder="请选择"
+          />
+        )}
+        {currentRow?.configKey === CONFIG_KEY.PASSWORD_ENCODER && (
+          <ProFormSelect
+            name="configValue"
+            label="配置值"
+            rules={[{ required: true, message: '请选择密码器' }]}
+            options={PASSWORD_ENCODER_OPTIONS}
+            placeholder="请选择密码器"
+          />
+        )}
+        {currentRow?.configKey === CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS && (
+          <ProFormDigit
+            name="configValue"
+            label="配置值（小时）"
+            rules={[{ required: true, message: '请输入小时数' }]}
+            min={1}
+            max={720}
+            fieldProps={{ precision: 0 }}
+            placeholder="请输入小时数"
+          />
+        )}
+        {currentRow?.configKey &&
+          currentRow.configKey !== CONFIG_KEY.USER_FORCE_CHANGE_PASSWORD &&
+          currentRow.configKey !== CONFIG_KEY.PASSWORD_ENCODER &&
+          currentRow.configKey !== CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS && (
+            <ProFormText
+              name="configValue"
+              label="配置值"
+              rules={[{ required: true, message: '请输入配置值' }]}
+              placeholder="请输入配置值"
+            />
+          )}
       </ModalForm>
     </PageContainer>
   );

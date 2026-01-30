@@ -4,6 +4,7 @@ import cn.dsc.jk.consts.AttachStorageType;
 import cn.dsc.jk.dto.attach.AttachConvert;
 import cn.dsc.jk.dto.attach.AttachDetail;
 import cn.dsc.jk.dto.attach.AttachItem;
+import cn.dsc.jk.dto.attach.AttachOption;
 import cn.dsc.jk.dto.attach.AttachPageQuery;
 import cn.dsc.jk.dto.attach.AttachStats;
 import cn.dsc.jk.entity.AttachEntity;
@@ -31,7 +32,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +47,20 @@ public class AttachServiceImpl extends ServiceImpl<AttachMapper, AttachEntity> i
      * 文件上传基础路径（可根据实际情况配置）
      */
     private static final String UPLOAD_DIR = "uploads";
+
+    @Override
+    public AttachOption getOptionById(Long attachId) {
+        AttachEntity entity = this.getById(attachId);
+        if (entity == null) {
+            return null;
+        }
+        return AttachConvert.FU_TO_OPTION.apply(entity);
+    }
+
+    @Override
+    public List<AttachOption> selectByIds(List<Long> attachIds) {
+        return this.listByIds(attachIds).stream().map(AttachConvert.FU_TO_OPTION).collect(Collectors.toList());
+    }
 
     @Override
     @Transactional

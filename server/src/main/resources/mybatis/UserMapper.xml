@@ -65,6 +65,20 @@
             <if test="lockedFlag != null">
                 AND locked_flag = #{lockedFlag}
             </if>
+            <if test="roleIds != null and roleIds.size() > 0">
+                AND user_id IN (SELECT user_id FROM user_role_rel WHERE role_id IN
+                <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+                    #{roleId}
+                </foreach>
+                )
+            </if>
+            <if test="deptIds != null and deptIds.size() > 0">
+                AND user_id IN (SELECT user_id FROM user_dept_rel WHERE dept_id IN
+                <foreach collection="deptIds" item="deptId" open="(" separator="," close=")">
+                    #{deptId}
+                </foreach>
+                )
+            </if>
         </where>
         ORDER BY user_id DESC
     </select>

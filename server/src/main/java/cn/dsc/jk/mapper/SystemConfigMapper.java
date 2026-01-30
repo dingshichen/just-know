@@ -14,6 +14,14 @@ import org.apache.ibatis.annotations.Param;
 public interface SystemConfigMapper extends BaseMapper<SystemConfigEntity> {
 
     /**
+     * 根据配置键查询一条记录
+     *
+     * @param configKey 配置键
+     * @return 实体，不存在则 null
+     */
+    SystemConfigEntity selectByConfigKey(@Param("configKey") String configKey);
+
+    /**
      * 根据配置键更新配置值
      *
      * @param configKey   配置键

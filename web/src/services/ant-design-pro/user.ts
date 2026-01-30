@@ -5,8 +5,17 @@ import type { DeptItem } from './dept';
 import type { RoleItem } from './role';
 
 /**
+ * 头像附件选项，对应后端 AttachOption
+ */
+export type UserAvatarOption = {
+  attachId?: string;
+  title?: string;
+  attachUrl?: string;
+};
+
+/**
  * 用户列表项
- * 对应后端的 UserItem DTO
+ * 对应后端的 UserItem DTO（头像字段为 avatar: AttachOption）
  */
 export type UserItem = {
   userId: string;
@@ -16,9 +25,9 @@ export type UserItem = {
   phone?: string;
   email?: string;
   /**
-   * 用户头像地址（如果后端暂未返回该字段，则为可选）
+   * 头像附件信息（后端返回的 AttachOption）
    */
-  avatarUrl?: string;
+  avatar?: UserAvatarOption;
   lockedFlag?: boolean;
   roles?: RoleItem[];
   depts?: DeptItem[];
@@ -38,6 +47,10 @@ export type UserPageParams = {
   phone?: string;
   email?: string;
   lockedFlag?: boolean;
+  /** 角色ID列表（多选） */
+  roleIds?: string[];
+  /** 部门ID列表（多选） */
+  deptIds?: string[];
 };
 
 /**
@@ -157,6 +170,16 @@ export async function lockUser(userId: string) {
  */
 export async function unlockUser(userId: string) {
   return request<Result<void>>(`/api/user/${userId}/unlock`, {
+    method: 'PUT',
+  });
+}
+
+/**
+ * 重置用户密码为默认密码 123456
+ * PUT /api/user/{userId}/reset-password
+ */
+export async function resetUserPassword(userId: string) {
+  return request<Result<void>>(`/api/user/${userId}/reset-password`, {
     method: 'PUT',
   });
 }

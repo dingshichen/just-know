@@ -140,6 +140,17 @@ public class UserController {
     }
 
     /**
+     * 重置用户密码为默认密码 123456
+     *
+     * @param userId 用户ID
+     */
+    @PutMapping("/{userId}/reset-password")
+    public Result<?> resetPassword(@PathVariable Long userId) {
+        userService.resetPassword(userId);
+        return Result.success();
+    }
+
+    /**
      * 分配角色
      *
      * @param userId 用户ID

@@ -6,7 +6,7 @@ import { request } from '@umijs/max';
  * 附件列表项，对应后端 AttachItem
  */
 export type AttachItem = {
-  attachId: number;
+  attachId: string;
   title: string;
   storageType?: string;
   attachType?: string;

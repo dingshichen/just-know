@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 
 import cn.dsc.jk.dto.attach.AttachDetail;
 import cn.dsc.jk.dto.attach.AttachItem;
+import cn.dsc.jk.dto.attach.AttachOption;
 import cn.dsc.jk.dto.attach.AttachPageQuery;
 import cn.dsc.jk.dto.attach.AttachStats;
 import cn.dsc.jk.entity.AttachEntity;
@@ -20,6 +21,22 @@ import org.springframework.web.multipart.MultipartFile;
  * @author ding.shichen
  */
 public interface AttachService extends IService<AttachEntity> {
+
+    /**
+     * 根据ID查询附件选项
+     *
+     * @param attachId 附件ID
+     * @return 附件选项
+     */
+    AttachOption getOptionById(Long attachId);
+
+    /**
+     * 根据ID列表查询附件选项
+     *
+     * @param attachIds 附件ID列表
+     * @return 附件选项列表
+     */
+    List<AttachOption> selectByIds(List<Long> attachIds);
 
     /**
      * 上传附件
@@ -73,4 +90,6 @@ public interface AttachService extends IService<AttachEntity> {
      * @return 附件总数、今日/本周/本月/本年度上传总数
      */
     AttachStats stats();
+
+
 }

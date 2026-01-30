@@ -58,4 +58,19 @@ public class UserCredentialServiceImpl extends ServiceImpl<UserCredentialMapper,
         this.baseMapper.updateRememberMeBySeries(series, tokenValue, lastUsed);
     }
 
+    @Override
+    @Transactional
+    public void setPassword(Long userId, String encodedPassword) {
+        UserCredentialEntity credential = this.getById(userId);
+        if (credential != null) {
+            credential.setPassword(encodedPassword);
+            this.updateById(credential);
+        } else {
+            credential = new UserCredentialEntity();
+            credential.setUserId(userId);
+            credential.setPassword(encodedPassword);
+            this.save(credential);
+        }
+    }
+
 }
