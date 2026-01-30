@@ -38,7 +38,7 @@ public class SecurityConfiguration {
 
     private final ObjectMapper objectMapper;
     private final UserCredentialService userCredentialService;
-    private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+    private final SessionAuthenticationTokenFilter sessionAuthenticationTokenFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -66,7 +66,7 @@ public class SecurityConfiguration {
                 )
                 .formLogin(form -> form.disable())
                 .logout(logout -> logout.disable())
-                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(sessionAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler())

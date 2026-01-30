@@ -11,29 +11,12 @@ const showError = (title: string, description: string) => {
   });
 };
 
-const showWarning = (title: string, description: string) => {
-  notification.warning({
-    message: title,
-    description,
-    placement: 'topRight',
-  });
-};
-
-// 错误处理方案： 错误类型
-enum ErrorShowType {
-  SILENT = 0,
-  WARN_MESSAGE = 1,
-  ERROR_MESSAGE = 2,
-  NOTIFICATION = 3,
-  REDIRECT = 9,
-}
-// 与后端约定的响应数据格式
-interface ResponseStructure {
-  success: boolean;
-  data: any;
-  errorCode?: number;
-  errorMessage?: string;
-  showType?: ErrorShowType;
+// 与后端约定的响应数据格式（业务 Result 结构）
+// 统一为：{ code, msg, data }
+interface ResponseStructure<T = any> {
+  code: number;
+  msg: string;
+  data: T;
 }
 
 /**
@@ -44,46 +27,10 @@ interface ResponseStructure {
 export const errorConfig: RequestConfig = {
   // 错误处理： umi@3 的错误处理方案。
   errorConfig: {
-    // 错误抛出
-    errorThrower: (res) => {
-      const { success, data, errorCode, errorMessage, showType } =
-        res as unknown as ResponseStructure;
-      if (!success) {
-        const error: any = new Error(errorMessage);
-        error.name = 'BizError';
-        error.info = { errorCode, errorMessage, showType, data };
-        throw error; // 抛出自制的错误
-      }
-    },
-    // 错误接收及处理
+    // 错误接收及处理（仅处理网络层/HTTP 错误，业务错误交给响应拦截器处理）
     errorHandler: (error: any, opts: any) => {
       if (opts?.skipErrorHandler) throw error;
-      // 我们的 errorThrower 抛出的错误。
-      if (error.name === 'BizError') {
-        const errorInfo: ResponseStructure | undefined = error.info;
-        if (errorInfo) {
-          const { errorMessage, errorCode } = errorInfo;
-          switch (errorInfo.showType) {
-            case ErrorShowType.SILENT:
-              // do nothing
-              break;
-            case ErrorShowType.WARN_MESSAGE:
-              showWarning('提示', errorMessage || String(errorCode ?? ''));
-              break;
-            case ErrorShowType.ERROR_MESSAGE:
-              showError('请求失败', errorMessage || String(errorCode ?? ''));
-              break;
-            case ErrorShowType.NOTIFICATION:
-              showError(String(errorCode ?? '错误'), errorMessage || '');
-              break;
-            case ErrorShowType.REDIRECT:
-              // TODO: redirect
-              break;
-            default:
-              showError('请求失败', errorMessage || String(errorCode ?? ''));
-          }
-        }
-      } else if (error.response) {
+      if (error.response) {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
         showError('请求失败', `响应状态: ${error.response.status}`);
@@ -115,11 +62,12 @@ export const errorConfig: RequestConfig = {
   // 响应拦截器
   responseInterceptors: [
     (response) => {
-      // 拦截响应数据，进行个性化处理
-      const { data } = response as unknown as ResponseStructure;
+      // 拦截响应数据，统一处理业务层 Result 结构错误
+      const { data } = response as { data: any };
+      const res = data as Partial<ResponseStructure<any>>;
 
-      if (data?.success === false) {
-        showError('请求失败', (data as any)?.errorMessage || (data as any)?.msg || '请求失败，请重试');
+      if (typeof res.code === 'number' && res.code !== 0) {
+        showError('请求失败', res.msg || '请求失败，请重试');
       }
       return response;
     },

@@ -247,7 +247,7 @@ export default {
       data: null,
     });
   },
-  'POST /api/login/outLogin': (_req: Request, res: Response) => {
+  'POST /api/logout': (_req: Request, res: Response) => {
     access = '';
     res.send({ data: {}, success: true });
   },

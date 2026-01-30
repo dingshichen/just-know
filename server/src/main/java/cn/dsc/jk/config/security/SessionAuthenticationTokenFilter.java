@@ -1,5 +1,6 @@
 package cn.dsc.jk.config.security;
 
+import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.hutool.core.util.StrUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,19 +18,18 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
- * JWT 认证过滤器：从请求中解析 token 并写入 SecurityContext
+ * 会话认证过滤器：从请求中解析 Token 并从 Redis 获取用户信息写入 SecurityContext
  *
  * @author ding.shichen
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
+public class SessionAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    private final JwtContext jwtContext;
+    private final SessionTokenContext sessionTokenContext;
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -59,22 +59,21 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (!jwtContext.validateToken(token)) {
+        // 从 Redis 获取用户信息
+        UserSimpleDetail userDetail = sessionTokenContext.getUserDetail(token);
+        if (userDetail == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        Long userId = jwtContext.getUserIdFromToken(token);
-        if (userId == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        // 刷新 Token 过期时间（滑动过期）
+        sessionTokenContext.refreshToken(token);
 
         // principal 直接放 userId，便于 SecurityContextUtil.getUserId() 使用
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userId,
+                userDetail.getUserId(),
                 null,
-                Collections.emptyList()
+                userDetail.getAuthorities()
         );
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -106,4 +105,3 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         return null;
     }
 }
-

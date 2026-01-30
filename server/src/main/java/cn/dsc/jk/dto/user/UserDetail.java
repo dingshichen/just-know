@@ -1,5 +1,6 @@
 package cn.dsc.jk.dto.user;
 
+import cn.dsc.jk.dto.login.LoginSessionInfo;
 import cn.dsc.jk.dto.role.RoleOption;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,5 +40,15 @@ public class UserDetail extends UserItem {
      * 用户角色列表
      */
     private List<RoleOption> roles;
+
+    /**
+     * 是否在线
+     */
+    private Boolean online;
+
+    /**
+     * 登录会话信息列表（设备、IP、浏览器等）
+     */
+    private List<LoginSessionInfo> loginSessions;
 
 }

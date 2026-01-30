@@ -19,6 +19,7 @@ import {
   Upload,
   Popconfirm,
   Tag,
+  Space,
 } from 'antd';
 import type { MenuProps } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
@@ -59,7 +60,17 @@ const Users: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailRow, setDetailRow] = useState<
-    | (UserItem & { deptNames?: string[]; avatarAttachId?: number })
+    | (UserItem & {
+        deptNames?: string[];
+        avatarAttachId?: number;
+        online?: boolean;
+        loginSessions?: Array<{
+          device?: string;
+          ip?: string;
+          browser?: string;
+          loginTime?: string;
+        }>;
+      })
     | null
   >(null);
   const [createAvatarPreviewUrl, setCreateAvatarPreviewUrl] = useState<string | undefined>();
@@ -671,6 +682,61 @@ const Users: React.FC = () => {
               <Tag color="red">已锁定</Tag>
             ) : (
               <Tag color="green">正常</Tag>
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label="在线状态">
+            {detailRow?.online ? (
+              <Space>
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: '#52c41a',
+                    display: 'inline-block',
+                  }}
+                />
+                <span>在线</span>
+                {detailRow?.loginSessions && detailRow.loginSessions.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    {detailRow.loginSessions.map((session, index) => (
+                      <div key={index} style={{ marginTop: index > 0 ? 8 : 0 }}>
+                        <div>
+                          <strong>设备：</strong>
+                          {session.device || '未知设备'}
+                        </div>
+                        <div>
+                          <strong>IP：</strong>
+                          {session.ip || '未知IP'}
+                        </div>
+                        <div>
+                          <strong>浏览器：</strong>
+                          {session.browser || '未知浏览器'}
+                        </div>
+                        {session.loginTime && (
+                          <div>
+                            <strong>登录时间：</strong>
+                            {session.loginTime}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Space>
+            ) : (
+              <Space>
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: '#d9d9d9',
+                    display: 'inline-block',
+                  }}
+                />
+                <span>离线</span>
+              </Space>
             )}
           </Descriptions.Item>
           <Descriptions.Item label="创建时间">

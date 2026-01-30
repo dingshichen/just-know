@@ -17,6 +17,7 @@ import {
 
 /** 与后端 SystemConfigKey 对齐的配置键 */
 const CONFIG_KEY = {
+  USER_INITIAL_PASSWORD: 'user.initial.password',
   USER_FORCE_CHANGE_PASSWORD: 'user.force_change_password_on_first_login',
   PASSWORD_ENCODER: 'security.password_encoder',
   USER_LOGIN_EXPIRE_HOURS: 'user.login.expire_hours',
@@ -183,7 +184,20 @@ const SystemConfig: React.FC = () => {
             placeholder="请输入小时数"
           />
         )}
+        {currentRow?.configKey === CONFIG_KEY.USER_INITIAL_PASSWORD && (
+          <ProFormText.Password
+            name="configValue"
+            label="用户初始密码"
+            rules={[
+              { required: true, message: '请输入用户初始密码' },
+              { min: 6, message: '密码长度不能少于6位' },
+              { max: 32, message: '密码长度不能超过32位' },
+            ]}
+            placeholder="请输入用户初始密码"
+          />
+        )}
         {currentRow?.configKey &&
+          currentRow.configKey !== CONFIG_KEY.USER_INITIAL_PASSWORD &&
           currentRow.configKey !== CONFIG_KEY.USER_FORCE_CHANGE_PASSWORD &&
           currentRow.configKey !== CONFIG_KEY.PASSWORD_ENCODER &&
           currentRow.configKey !== CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS && (

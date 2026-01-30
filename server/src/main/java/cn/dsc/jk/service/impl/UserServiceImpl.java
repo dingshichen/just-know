@@ -1,6 +1,8 @@
 package cn.dsc.jk.service.impl;
 
 import cn.dsc.jk.common.SecurityConstant;
+import cn.dsc.jk.config.security.SessionTokenContext;
+import cn.dsc.jk.dto.login.LoginSessionInfo;
 import cn.dsc.jk.exception.BizException;
 import cn.dsc.jk.dto.attach.AttachOption;
 import cn.dsc.jk.dto.dept.DeptOption;
@@ -72,6 +74,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private SessionTokenContext sessionTokenContext;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserSimpleDetail detail = this.baseMapper.selectSimpleDetailByAccount(username);
@@ -139,6 +144,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             }).collect(Collectors.toList());
             userDeptRelService.saveBatch(userDepts);
         }
+
+        // 清除用户会话，强制重新登录
+        sessionTokenContext.removeSessionsByUserId(userId);
     }
 
     @Override
@@ -148,6 +156,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (entity != null && SecurityConstant.SYS_ADMIN_ACCOUNT.equals(entity.getAccount())) {
             throw new BizException("不能对系统管理员进行删除操作");
         }
+        // 清除用户会话
+        sessionTokenContext.removeSessionsByUserId(userId);
         // 删除用户角色关系
         userRoleRelService.deleteByUserId(userId);
         // 删除用户部门关系
@@ -168,6 +178,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 throw new BizException("不能对系统管理员进行删除操作");
             }
         }
+        // 批量清除用户会话
+        sessionTokenContext.removeSessionsByUserIds(userIds);
         // 批量删除用户角色关系
         for (Long userId : userIds) {
             userRoleRelService.deleteByUserId(userId);
@@ -204,6 +216,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         // 加载用户头像
         AttachOption avatar = attachService.getOptionById(entity.getAvatarAttachId());
         detail.setAvatar(avatar);
+
+        // 加载用户在线状态和登录会话信息
+        boolean isOnline = sessionTokenContext.isUserOnline(userId);
+        detail.setOnline(isOnline);
+        if (isOnline) {
+            List<LoginSessionInfo> loginSessions = sessionTokenContext.getUserLoginSessions(userId);
+            detail.setLoginSessions(loginSessions);
+        } else {
+            detail.setLoginSessions(new java.util.ArrayList<>());
+        }
 
         return detail;
     }
@@ -266,6 +288,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         }
         entity.setLockedFlag(true);
         this.updateById(entity);
+        // 清除用户会话，强制下线
+        sessionTokenContext.removeSessionsByUserId(userId);
     }
 
     @Override
@@ -326,5 +350,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             throw new BizException("不能对系统管理员进行重置密码操作");
         }
         userCredentialService.setPassword(userId, passwordEncoder.encode(SecurityConstant.DEFAULT_PASSWORD));
+        // 清除用户会话，强制重新登录
+        sessionTokenContext.removeSessionsByUserId(userId);
     }
 }
