@@ -54,5 +54,5 @@ export default {
   'menu.system.user': 'User Management',
   'menu.system.attach': 'Attachment Management',
   'menu.system.config': 'System Config',
-  'menu.system.dept': 'Department Management',
+  'menu.system.dept': 'Organization Management',
 };

@@ -216,7 +216,7 @@ const Dept: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<DeptItem>
-        headerTitle="部门管理"
+        headerTitle="机构管理"
         rowKey="deptId"
         actionRef={actionRef}
         columns={columns}
@@ -232,7 +232,7 @@ const Dept: React.FC = () => {
               setCreateModalOpen(true);
             }}
           >
-            <PlusOutlined /> 新建部门
+            <PlusOutlined /> 新建机构
           </Button>,
           selectedRows.length > 0 && (
             <Popconfirm
@@ -303,7 +303,7 @@ const Dept: React.FC = () => {
       </Modal>
 
       <ModalForm<DeptForm>
-        title="新建部门"
+        title="新建机构"
         open={createModalOpen}
         modalProps={{
           destroyOnHidden: true,
@@ -343,7 +343,7 @@ const Dept: React.FC = () => {
       </ModalForm>
 
       <ModalForm<DeptForm>
-        title="编辑部门"
+        title="编辑机构"
         open={editModalOpen}
         form={editForm}
         modalProps={{

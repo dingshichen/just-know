@@ -54,5 +54,5 @@ export default {
   'menu.system.user': '用户管理',
   'menu.system.attach': '附件管理',
   'menu.system.config': '系统配置',
-  'menu.system.dept': '部门管理',
+  'menu.system.dept': '机构管理',
 };
