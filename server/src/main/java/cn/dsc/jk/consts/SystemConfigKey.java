@@ -32,7 +32,13 @@ public enum SystemConfigKey {
     USER_LOGIN_EXPIRE_HOURS(
             "user.login.expire_hours",
             "用户登录过期时间",
-            "单位：小时，JWT 或会话过期时间");
+            "单位：小时，JWT 或会话过期时间"),
+
+    /** 是否允许同一账号多端同时在线 */
+    USER_LOGIN_ALLOW_MULTI_CLIENT(
+            "user.login.allow_multi_client",
+            "是否允许多端在线",
+            "true 表示允许同一账号多端同时在线，false 表示仅保留最新会话，其它会话强制下线");
 
     private final String key;
     private final String configName;

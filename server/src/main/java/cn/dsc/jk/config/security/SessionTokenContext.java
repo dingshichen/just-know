@@ -45,6 +45,13 @@ public class SessionTokenContext {
      * @return Token
      */
     public String generateToken(UserSimpleDetail userDetail, HttpServletRequest request) {
+        // 从系统配置获取是否允许多端在线
+        boolean allowMultiLogin = systemConfigService.isAllowMultiLogin();
+        if (!allowMultiLogin) {
+            // 不允许多端在线时，先清理该用户的所有历史会话，仅保留即将创建的新会话
+            removeSessionsByUserId(userDetail.getUserId());
+        }
+
         String token = UUID.randomUUID().toString().replace("-", "");
         String sessionKey = SESSION_KEY_PREFIX + token;
 

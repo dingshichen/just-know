@@ -102,6 +102,13 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
                 }
                 yield null;
             }
+            case USER_LOGIN_ALLOW_MULTI_CLIENT -> {
+                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+                    yield String.format("- [%s] %s: 值必须为 true 或 false，当前值: %s",
+                            key.getKey(), key.getConfigName(), value);
+                }
+                yield null;
+            }
             case PASSWORD_ENCODER -> {
                 if (!VALID_PASSWORD_ENCODERS.contains(value.toLowerCase())) {
                     yield String.format("- [%s] %s: 值必须为 %s 之一，当前值: %s",
@@ -232,6 +239,8 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
             case USER_INITIAL_PASSWORD -> "用户初始密码不能为空";
             case USER_FORCE_CHANGE_PASSWORD_ON_FIRST_LOGIN ->
                     "首次登录是否强制修改密码的值必须为 true 或 false";
+            case USER_LOGIN_ALLOW_MULTI_CLIENT ->
+                    "是否允许多端在线的值必须为 true 或 false";
             case PASSWORD_ENCODER ->
                     "密码器的值必须为 " + VALID_PASSWORD_ENCODERS + " 之一";
             case USER_LOGIN_EXPIRE_HOURS ->
@@ -266,6 +275,12 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     @Override
     public long getUserLoginExpireMillis() {
         return (long) getUserLoginExpireHours() * 60 * 60 * 1000;
+    }
+
+    @Override
+    public boolean isAllowMultiLogin() {
+        String value = getRequiredValue(SystemConfigKey.USER_LOGIN_ALLOW_MULTI_CLIENT);
+        return "true".equalsIgnoreCase(value);
     }
 }
 

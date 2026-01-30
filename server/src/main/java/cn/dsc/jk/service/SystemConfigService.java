@@ -70,6 +70,13 @@ public interface SystemConfigService extends IService<SystemConfigEntity> {
     long getUserLoginExpireMillis();
 
     /**
+     * 是否允许同一账号多端同时在线
+     *
+     * @return true 表示允许多端在线，false 表示仅保留最新会话
+     */
+    boolean isAllowMultiLogin();
+
+    /**
      * 刷新内存中的配置缓存
      */
     void refreshCache();
