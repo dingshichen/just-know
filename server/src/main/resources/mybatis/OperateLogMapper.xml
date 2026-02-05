@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.OperateLogMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.OperateLogEntity">
+        <id column="log_id" property="logId" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="ip" property="ip" jdbcType="VARCHAR"/>
+        <result column="browser" property="browser" jdbcType="VARCHAR"/>
+        <result column="device" property="device" jdbcType="VARCHAR"/>
+        <result column="ops_module" property="opsModule" jdbcType="VARCHAR"/>
+        <result column="ops_name" property="opsName" jdbcType="VARCHAR"/>
+        <result column="cost_time" property="costTime" jdbcType="BIGINT"/>
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        log_id,
+        user_id,
+        ip,
+        browser,
+        device,
+        ops_module,
+        ops_name,
+        cost_time,
+        created_time
+    </sql>
+
+    <!-- Select list with conditions -->
+    <select id="selectList" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM operate_log
+        <where>
+            <if test="opsModule != null and opsModule != ''">
+                AND ops_module LIKE CONCAT('%', #{opsModule}, '%')
+            </if>
+            <if test="opsName != null and opsName != ''">
+                AND ops_name LIKE CONCAT('%', #{opsName}, '%')
+            </if>
+            <if test="startTime != null">
+                AND created_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND created_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY log_id DESC
+    </select>
+
+</mapper>
+

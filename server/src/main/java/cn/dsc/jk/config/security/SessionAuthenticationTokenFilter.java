@@ -71,7 +71,7 @@ public class SessionAuthenticationTokenFilter extends OncePerRequestFilter {
 
         // principal 直接放 userId，便于 SecurityContextUtil.getUserId() 使用
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetail.getUserId(),
+                userDetail,
                 null,
                 userDetail.getAuthorities()
         );

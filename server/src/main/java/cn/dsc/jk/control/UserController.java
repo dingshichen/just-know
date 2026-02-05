@@ -84,12 +84,7 @@ public class UserController {
      */
     @GetMapping("/current")
     public Result<UserSimpleDetail> current() {
-        Long userId = SecurityContextUtil.getUserId();
-        UserSimpleDetail detail = userService.loadSimpleDetail(userId);
-        if (detail == null) {
-            return Result.error(ResultCode.AUTH_FAIL, "用户不存在");
-        }
-        return Result.success(detail);
+        return Result.success(SecurityContextUtil.getUser());
     }
 
     /**

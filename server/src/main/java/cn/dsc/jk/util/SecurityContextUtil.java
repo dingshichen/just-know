@@ -1,5 +1,6 @@
 package cn.dsc.jk.util;
 
+import cn.dsc.jk.dto.user.UserSimpleDetail;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -7,8 +8,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public abstract class SecurityContextUtil {
 
+    public static UserSimpleDetail getUser() {
+        return (UserSimpleDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     public static Long getUserId() {
-        return (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return getUser().getUserId();
     }
 
 }
