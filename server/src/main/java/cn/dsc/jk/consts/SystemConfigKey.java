@@ -38,7 +38,13 @@ public enum SystemConfigKey {
     USER_LOGIN_ALLOW_MULTI_CLIENT(
             "user.login.allow_multi_client",
             "是否允许多端在线",
-            "true 表示允许同一账号多端同时在线，false 表示仅保留最新会话，其它会话强制下线");
+            "true 表示允许同一账号多端同时在线，false 表示仅保留最新会话，其它会话强制下线"),
+
+    /** 是否允许线上操作权限定义 */
+    PERMISSION_ALLOW_ONLINE_OPERATION(
+            "permission.allow_online_operation",
+            "是否允许线上操作权限定义",
+            "true 表示允许在权限定义菜单操作权限定义，false 表示仅可查看不可操作");
 
     private final String key;
     private final String configName;

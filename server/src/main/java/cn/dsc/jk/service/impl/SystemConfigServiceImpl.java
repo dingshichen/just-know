@@ -129,6 +129,13 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
                 }
                 yield null;
             }
+            case PERMISSION_ALLOW_ONLINE_OPERATION -> {
+                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+                    yield String.format("- [%s] %s: 值必须为 true 或 false，当前值: %s",
+                            key.getKey(), key.getConfigName(), value);
+                }
+                yield null;
+            }
         };
     }
 
@@ -245,6 +252,8 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
                     "密码器的值必须为 " + VALID_PASSWORD_ENCODERS + " 之一";
             case USER_LOGIN_EXPIRE_HOURS ->
                     "用户登录过期时间必须为正整数（单位：小时）";
+            case PERMISSION_ALLOW_ONLINE_OPERATION ->
+                    "是否允许线上操作权限定义的值必须为 true 或 false";
         };
     }
 
@@ -280,6 +289,12 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     @Override
     public boolean isAllowMultiLogin() {
         String value = getRequiredValue(SystemConfigKey.USER_LOGIN_ALLOW_MULTI_CLIENT);
+        return "true".equalsIgnoreCase(value);
+    }
+
+    @Override
+    public boolean isPermissionAllowOnlineOperation() {
+        String value = getRequiredValue(SystemConfigKey.PERMISSION_ALLOW_ONLINE_OPERATION);
         return "true".equalsIgnoreCase(value);
     }
 }

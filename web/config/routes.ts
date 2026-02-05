@@ -305,6 +305,12 @@ export default [
         component: './system/config',
       },
       {
+        name: 'permission',
+        icon: 'smile',
+        path: '/system/permission',
+        component: './system/permission',
+      },
+      {
         path: '/system',
         redirect: '/system/user',
       },

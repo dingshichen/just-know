@@ -21,6 +21,7 @@ const CONFIG_KEY = {
   USER_FORCE_CHANGE_PASSWORD: 'user.force_change_password_on_first_login',
   PASSWORD_ENCODER: 'security.password_encoder',
   USER_LOGIN_EXPIRE_HOURS: 'user.login.expire_hours',
+  PERMISSION_ALLOW_ONLINE_OPERATION: 'permission.allow_online_operation',
 } as const;
 
 const FORCE_CHANGE_OPTIONS = [
@@ -114,7 +115,7 @@ const SystemConfig: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<SystemConfigItem>
-        headerTitle="系统配置"
+        headerTitle="参数设置"
         rowKey="configKey"
         actionRef={actionRef}
         columns={columns}
@@ -196,11 +197,21 @@ const SystemConfig: React.FC = () => {
             placeholder="请输入用户初始密码"
           />
         )}
+        {currentRow?.configKey === CONFIG_KEY.PERMISSION_ALLOW_ONLINE_OPERATION && (
+          <ProFormSelect
+            name="configValue"
+            label="配置值"
+            rules={[{ required: true, message: '请选择' }]}
+            options={FORCE_CHANGE_OPTIONS}
+            placeholder="请选择（是=允许在权限定义菜单操作，否=仅可查看）"
+          />
+        )}
         {currentRow?.configKey &&
           currentRow.configKey !== CONFIG_KEY.USER_INITIAL_PASSWORD &&
           currentRow.configKey !== CONFIG_KEY.USER_FORCE_CHANGE_PASSWORD &&
           currentRow.configKey !== CONFIG_KEY.PASSWORD_ENCODER &&
-          currentRow.configKey !== CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS && (
+          currentRow.configKey !== CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS &&
+          currentRow.configKey !== CONFIG_KEY.PERMISSION_ALLOW_ONLINE_OPERATION && (
             <ProFormText
               name="configValue"
               label="配置值"

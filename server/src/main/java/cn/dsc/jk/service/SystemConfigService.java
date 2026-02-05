@@ -77,6 +77,13 @@ public interface SystemConfigService extends IService<SystemConfigEntity> {
     boolean isAllowMultiLogin();
 
     /**
+     * 是否允许在权限定义菜单中操作权限定义（新增/编辑/删除）
+     *
+     * @return true 表示允许操作，false 表示仅可查看
+     */
+    boolean isPermissionAllowOnlineOperation();
+
+    /**
      * 刷新内存中的配置缓存
      */
     void refreshCache();

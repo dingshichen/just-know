@@ -166,7 +166,7 @@ const Roles: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<RoleItem, RolePageParams>
-        headerTitle="角色权限"
+        headerTitle="角色管理"
         rowKey="roleId"
         actionRef={actionRef}
         columns={columns}
