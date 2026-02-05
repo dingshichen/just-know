@@ -1,6 +1,15 @@
 import type { RequestOptions } from '@@/plugin-request/request';
 import type { RequestConfig } from '@umijs/max';
+import { history } from '@umijs/max';
 import { notification } from 'antd';
+
+const loginPath = '/user/login';
+
+/** 当前是否为登录页（或注册等无需登录的页面） */
+const isLoginPage = () => {
+  const path = history.location?.pathname || window.location.pathname;
+  return [loginPath, '/user/register', '/user/register-result'].includes(path);
+};
 
 // 在页面右上角展示错误提示
 const showError = (title: string, description: string) => {
@@ -31,16 +40,22 @@ export const errorConfig: RequestConfig = {
     errorHandler: (error: any, opts: any) => {
       if (opts?.skipErrorHandler) throw error;
       if (error.response) {
-        // Axios 的错误
-        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-        showError('请求失败', `响应状态: ${error.response.status}`);
+        // HTTP 401/403 视为认证失败：非登录页静默跳转登录页，登录页才弹错
+        const status = error.response.status;
+        if (status === 401 || status === 403) {
+          if (!isLoginPage()) {
+            history.push(loginPath);
+            return;
+          }
+          showError('认证失败', error.response?.data?.msg || `响应状态: ${status}`);
+          return;
+        }
+        // 其他 HTTP 错误照常提示
+        showError('请求失败', `响应状态: ${status}`);
       } else if (error.request) {
         // 请求已经成功发起，但没有收到响应
-        // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
-        // 而在node.js中是 http.ClientRequest 的实例
         showError('请求失败', '未收到响应，请重试');
       } else {
-        // 发送请求时出了点问题
         showError('请求失败', '请求异常，请重试');
       }
     },
@@ -67,6 +82,15 @@ export const errorConfig: RequestConfig = {
       const res = data as Partial<ResponseStructure<any>>;
 
       if (typeof res.code === 'number' && res.code !== 0) {
+        // 业务码 401 视为认证失败：非登录页静默跳转登录页，登录页才弹错
+        if (res.code === 401) {
+          if (!isLoginPage()) {
+            history.push(loginPath);
+            return response;
+          }
+          showError('认证失败', res.msg || '请重新登录');
+          return response;
+        }
         showError('请求失败', res.msg || '请求失败，请重试');
       }
       return response;

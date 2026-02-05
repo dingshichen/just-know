@@ -1,16 +1,12 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
-import { history, Link } from '@umijs/max';
-import React from 'react';
+import { history } from '@umijs/max';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar } from 'antd';
 import {
   AvatarDropdown,
   AvatarName,
-  Footer,
-  Question,
-  SelectLang,
 } from '@/components';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
 import defaultSettings from '../config/defaultSettings';
