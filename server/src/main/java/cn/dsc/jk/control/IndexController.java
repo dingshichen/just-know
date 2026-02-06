@@ -10,6 +10,7 @@ import cn.dsc.jk.dto.login.LoginResponse;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.service.CaptchaService;
 import cn.dsc.jk.service.LoginLogService;
+import cn.dsc.jk.service.SystemConfigService;
 import cn.dsc.jk.consts.ValidateResult;
 import cn.dsc.jk.util.WebUtils;
 import cn.hutool.core.collection.CollUtil;
@@ -19,10 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +42,7 @@ public class IndexController {
     private final CaptchaService captchaService;
     private final SessionTokenContext sessionTokenContext;
     private final LoginLogService loginLogService;
+    private final SystemConfigService systemConfigService;
 
     /**
      * 获取验证码
@@ -51,6 +51,9 @@ public class IndexController {
      */
     @GetMapping("/captcha")
     public Result<CaptchaDetail> getCaptcha() {
+        if (!systemConfigService.isUserLoginCaptchaEnabled()) {
+            return Result.success();
+        }
         return Result.success(captchaService.generateCaptcha());
     }
 
@@ -68,25 +71,39 @@ public class IndexController {
         String ip = WebUtils.getClientIp(httpRequest);
         String device = WebUtils.parseDevice(userAgent);
         String browser = WebUtils.parseBrowser(userAgent);
+
+        boolean saveLoginFailLog = systemConfigService.isSaveLoginFailLogEnabled();
         // 验证参数
         if (StrUtil.isBlank(request.getUsername()) || StrUtil.isBlank(request.getPassword())) {
-            loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+            if (saveLoginFailLog) {
+                loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+            }
             return Result.error(ResultCode.LOGIN_FAIL, "账号或密码不能为空");
         }
-        if (StrUtil.isBlank(request.getCaptcha()) || StrUtil.isBlank(request.getCaptchaId())) {
-            loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
-            return Result.error(ResultCode.LOGIN_FAIL, "验证码不能为空");
-        }
 
-        // 验证验证码
-        ValidateResult validateResult = captchaService.validateCaptcha(request.getCaptchaId(), request.getCaptcha());
-        if (validateResult == ValidateResult.EXPIRED) {
-            loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
-            return Result.error(ResultCode.LOGIN_FAIL, "验证码已过期，请重新获取");
-        }
-        if (validateResult == ValidateResult.ERROR) {
-            loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
-            return Result.error(ResultCode.LOGIN_FAIL, "验证码错误");
+        // 根据系统配置决定是否需要验证码校验
+        if (systemConfigService.isUserLoginCaptchaEnabled()) {
+            if (StrUtil.isBlank(request.getCaptcha()) || StrUtil.isBlank(request.getCaptchaId())) {
+                if (saveLoginFailLog) {
+                    loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+                }
+                return Result.error(ResultCode.LOGIN_FAIL, "验证码不能为空");
+            }
+
+            // 验证验证码
+            ValidateResult validateResult = captchaService.validateCaptcha(request.getCaptchaId(), request.getCaptcha());
+            if (validateResult == ValidateResult.EXPIRED) {
+                if (saveLoginFailLog) {
+                    loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+                }
+                return Result.error(ResultCode.LOGIN_FAIL, "验证码已过期，请重新获取");
+            }
+            if (validateResult == ValidateResult.ERROR) {
+                if (saveLoginFailLog) {
+                    loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+                }
+                return Result.error(ResultCode.LOGIN_FAIL, "验证码错误");
+            }
         }
 
         // 使用 Spring Security 进行认证
@@ -113,7 +130,9 @@ public class IndexController {
 
             return Result.success(response);
         } catch (RuntimeException e) {
-            loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+            if (saveLoginFailLog) {
+                loginLogService.create(null, request.getUsername(), LoginActionType.LOGIN_FAIL, ip, browser, device);
+            }
             throw e;
         }
     }

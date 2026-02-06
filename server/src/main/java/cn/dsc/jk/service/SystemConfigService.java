@@ -70,6 +70,20 @@ public interface SystemConfigService extends IService<SystemConfigEntity> {
     long getUserLoginExpireMillis();
 
     /**
+     * 是否开启验证码登录
+     *
+     * @return true 表示开启验证码登录，false 表示不启用
+     */
+    boolean isUserLoginCaptchaEnabled();
+
+    /**
+     * 登录失败是否记录登录日志
+     *
+     * @return true 表示记录登录失败的日志，false 表示不记录登录失败日志
+     */
+    boolean isSaveLoginFailLogEnabled();
+
+    /**
      * 是否允许同一账号多端同时在线
      *
      * @return true 表示允许多端在线，false 表示仅保留最新会话

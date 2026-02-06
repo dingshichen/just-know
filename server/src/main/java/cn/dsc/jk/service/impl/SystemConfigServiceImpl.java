@@ -93,50 +93,40 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
             return String.format("- [%s] %s: 配置值不能为空", key.getKey(), key.getConfigName());
         }
 
-        return switch (key) {
-            case USER_INITIAL_PASSWORD -> null; // 非空即可
-            case USER_FORCE_CHANGE_PASSWORD_ON_FIRST_LOGIN -> {
+        switch (key) {
+            case USER_INITIAL_PASSWORD:
+                return null; // 非空即可
+            case USER_FORCE_CHANGE_PASSWORD_ON_FIRST_LOGIN:
+            case USER_LOGIN_CAPTCHA:
+            case USER_LOGIN_SAVE_LOGIN_FAIL:
+            case USER_LOGIN_ALLOW_MULTI_CLIENT:
+            case PERMISSION_ALLOW_ONLINE_OPERATION:
                 if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
-                    yield String.format("- [%s] %s: 值必须为 true 或 false，当前值: %s",
+                    return String.format("- [%s] %s: 值必须为 true 或 false，当前值: %s",
                             key.getKey(), key.getConfigName(), value);
                 }
-                yield null;
-            }
-            case USER_LOGIN_ALLOW_MULTI_CLIENT -> {
-                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
-                    yield String.format("- [%s] %s: 值必须为 true 或 false，当前值: %s",
-                            key.getKey(), key.getConfigName(), value);
-                }
-                yield null;
-            }
-            case PASSWORD_ENCODER -> {
+                return null;
+            case PASSWORD_ENCODER:
                 if (!VALID_PASSWORD_ENCODERS.contains(value.toLowerCase())) {
-                    yield String.format("- [%s] %s: 值必须为 %s 之一，当前值: %s",
+                    return String.format("- [%s] %s: 值必须为 %s 之一，当前值: %s",
                             key.getKey(), key.getConfigName(), VALID_PASSWORD_ENCODERS, value);
                 }
-                yield null;
-            }
-            case USER_LOGIN_EXPIRE_HOURS -> {
+                return null;
+            case USER_LOGIN_EXPIRE_HOURS:
                 try {
                     int hours = Integer.parseInt(value.trim());
                     if (hours <= 0) {
-                        yield String.format("- [%s] %s: 值必须为正整数，当前值: %s",
+                        return String.format("- [%s] %s: 值必须为正整数，当前值: %s",
                                 key.getKey(), key.getConfigName(), value);
                     }
                 } catch (NumberFormatException e) {
-                    yield String.format("- [%s] %s: 值必须为正整数，当前值: %s",
+                    return String.format("- [%s] %s: 值必须为正整数，当前值: %s",
                             key.getKey(), key.getConfigName(), value);
                 }
-                yield null;
-            }
-            case PERMISSION_ALLOW_ONLINE_OPERATION -> {
-                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
-                    yield String.format("- [%s] %s: 值必须为 true 或 false，当前值: %s",
-                            key.getKey(), key.getConfigName(), value);
-                }
-                yield null;
-            }
-        };
+                return null;
+            default:
+                return null;
+        }
     }
 
     /**
@@ -242,19 +232,26 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
      * 获取校验错误的友好提示信息
      */
     private String getValidationErrorMessage(SystemConfigKey key, String value) {
-        return switch (key) {
-            case USER_INITIAL_PASSWORD -> "用户初始密码不能为空";
-            case USER_FORCE_CHANGE_PASSWORD_ON_FIRST_LOGIN ->
-                    "首次登录是否强制修改密码的值必须为 true 或 false";
-            case USER_LOGIN_ALLOW_MULTI_CLIENT ->
-                    "是否允许多端在线的值必须为 true 或 false";
-            case PASSWORD_ENCODER ->
-                    "密码器的值必须为 " + VALID_PASSWORD_ENCODERS + " 之一";
-            case USER_LOGIN_EXPIRE_HOURS ->
-                    "用户登录过期时间必须为正整数（单位：小时）";
-            case PERMISSION_ALLOW_ONLINE_OPERATION ->
-                    "是否允许线上操作权限定义的值必须为 true 或 false";
-        };
+        switch (key) {
+            case USER_INITIAL_PASSWORD:
+                return "用户初始密码不能为空";
+            case USER_FORCE_CHANGE_PASSWORD_ON_FIRST_LOGIN:
+                return "首次登录是否强制修改密码的值必须为 true 或 false";
+            case USER_LOGIN_CAPTCHA:
+                return "是否开启验证码登录的值必须为 true 或 false";
+            case USER_LOGIN_SAVE_LOGIN_FAIL:
+                return "登录失败是否记录登录日志的值必须为 true 或 false";
+            case USER_LOGIN_ALLOW_MULTI_CLIENT:
+                return "是否允许多端在线的值必须为 true 或 false";
+            case PASSWORD_ENCODER:
+                return "密码器的值必须为 " + VALID_PASSWORD_ENCODERS + " 之一";
+            case USER_LOGIN_EXPIRE_HOURS:
+                return "用户登录过期时间必须为正整数（单位：小时）";
+            case PERMISSION_ALLOW_ONLINE_OPERATION:
+                return "是否允许线上操作权限定义的值必须为 true 或 false";
+            default:
+                return "配置值不合法";
+        }
     }
 
     // ============ 各配置项的 getValue 方法实现 ============
@@ -284,6 +281,18 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     @Override
     public long getUserLoginExpireMillis() {
         return (long) getUserLoginExpireHours() * 60 * 60 * 1000;
+    }
+
+    @Override
+    public boolean isUserLoginCaptchaEnabled() {
+        String value = getRequiredValue(SystemConfigKey.USER_LOGIN_CAPTCHA);
+        return "true".equalsIgnoreCase(value);
+    }
+
+    @Override
+    public boolean isSaveLoginFailLogEnabled() {
+        String value = getRequiredValue(SystemConfigKey.USER_LOGIN_SAVE_LOGIN_FAIL);
+        return "true".equalsIgnoreCase(value);
     }
 
     @Override

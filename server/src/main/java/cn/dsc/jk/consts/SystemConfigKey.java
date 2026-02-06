@@ -34,6 +34,18 @@ public enum SystemConfigKey {
             "用户登录过期时间",
             "单位：小时，JWT 或会话过期时间"),
 
+    /** 是否开启验证码登录 */
+    USER_LOGIN_CAPTCHA(
+            "user.login.captcha",
+            "是否开启验证码登录",
+            "true 表示开启验证码登录，false 表示不启用验证码登录"),
+
+    /** 登录失败是否记录登录日志 */
+    USER_LOGIN_SAVE_LOGIN_FAIL(
+            "user.login.save_login_fail",
+            "登录失败是否记录登录日志",
+            "true 表示记录登录失败的日志，false 表示不记录登录失败日志"),
+
     /** 是否允许同一账号多端同时在线 */
     USER_LOGIN_ALLOW_MULTI_CLIENT(
             "user.login.allow_multi_client",

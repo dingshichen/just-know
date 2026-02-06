@@ -48,6 +48,42 @@ let mockSystemConfigs: any[] = [
     createdTime: '2024-01-01 10:00:00',
     updatedTime: '2024-01-01 10:00:00',
   },
+  {
+    configId: 5,
+    configName: '是否开启验证码登录',
+    configKey: 'user.login.captcha',
+    configValue: 'true',
+    configDesc: 'true 表示开启验证码登录，false 表示不启用验证码登录',
+    createdTime: '2024-01-01 10:00:00',
+    updatedTime: '2024-01-01 10:00:00',
+  },
+  {
+    configId: 6,
+    configName: '登录失败是否记录登录日志',
+    configKey: 'user.login.save_login_fail',
+    configValue: 'true',
+    configDesc: 'true 表示记录登录失败的日志，false 表示不记录登录失败日志',
+    createdTime: '2024-01-01 10:00:00',
+    updatedTime: '2024-01-01 10:00:00',
+  },
+  {
+    configId: 7,
+    configName: '是否允许多端在线',
+    configKey: 'user.login.allow_multi_client',
+    configValue: 'true',
+    configDesc: 'true 表示允许同一账号多端同时在线，false 表示仅保留最新会话，其它会话强制下线',
+    createdTime: '2024-01-01 10:00:00',
+    updatedTime: '2024-01-01 10:00:00',
+  },
+  {
+    configId: 8,
+    configName: '是否允许线上操作权限定义',
+    configKey: 'permission.allow_online_operation',
+    configValue: 'true',
+    configDesc: 'true 表示允许在权限定义菜单操作权限定义，false 表示仅可查看不可操作',
+    createdTime: '2024-01-01 10:00:00',
+    updatedTime: '2024-01-01 10:00:00',
+  },
 ];
 
 export default {

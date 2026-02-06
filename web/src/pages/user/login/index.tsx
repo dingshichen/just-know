@@ -81,9 +81,9 @@ const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('account');
   const [captchaDetail, setCaptchaDetail] = useState<{
-    captchaId?: string;
-    captchaImage?: string;
-  }>({});
+    captchaId: string;
+    captchaImage: string;
+  } | null>(null);
   const { initialState, setInitialState } = useModel('@@initialState');
   const { styles } = useStyles();
   const { message } = App.useApp();
@@ -101,8 +101,6 @@ const Login: React.FC = () => {
       const res = await getCaptcha({ skipErrorHandler: true });
       if (res.code === 0 && res.data) {
         setCaptchaDetail(res.data);
-      } else {
-        showRequestError(res.msg || '获取验证码失败，请稍后重试');
       }
     } catch (e) {
       showRequestError('获取验证码失败，请稍后重试');
@@ -128,7 +126,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
-      if (!captchaDetail.captchaId) {
+      if (!captchaDetail?.captchaId) {
         showRequestError('验证码异常，请刷新重试');
         await refreshCaptcha();
         return;
@@ -238,40 +236,42 @@ const Login: React.FC = () => {
                   },
                 ]}
               />
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                }}
-              >
-                <ProFormText
-                  name="captcha"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <LockOutlined />,
-                  }}
-                  placeholder="请输入验证码"
-                  rules={[
-                    {
-                      required: true,
-                      message: '请输入验证码！',
-                    },
-                  ]}
-                />
-                <img
+              {captchaDetail !== null && (
+                <div
                   style={{
-                    height: 40,
-                    cursor: 'pointer',
-                    borderRadius: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16,
                   }}
-                  src={
-                    captchaDetail?.captchaImage
-                  }
-                  alt="验证码"
-                  onClick={refreshCaptcha}
-                />
-              </div>
+                >
+                  <ProFormText
+                    name="captcha"
+                    fieldProps={{
+                      size: 'large',
+                      prefix: <LockOutlined />,
+                    }}
+                    placeholder="请输入验证码"
+                    rules={[
+                      {
+                        required: true,
+                        message: '请输入验证码！',
+                      },
+                    ]}
+                  />
+                  <img
+                    style={{
+                      height: 40,
+                      cursor: 'pointer',
+                      borderRadius: 4,
+                    }}
+                    src={
+                      captchaDetail?.captchaImage
+                    }
+                    alt="验证码"
+                    onClick={refreshCaptcha}
+                  />
+                </div>
+              )}
             </>
           )}
           <div

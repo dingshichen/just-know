@@ -21,12 +21,15 @@ const CONFIG_KEY = {
   USER_FORCE_CHANGE_PASSWORD: 'user.force_change_password_on_first_login',
   PASSWORD_ENCODER: 'security.password_encoder',
   USER_LOGIN_EXPIRE_HOURS: 'user.login.expire_hours',
+  USER_LOGIN_CAPTCHA: 'user.login.captcha',
+  USER_LOGIN_SAVE_LOGIN_FAIL: 'user.login.save_login_fail',
+  USER_LOGIN_ALLOW_MULTI_CLIENT: 'user.login.allow_multi_client',
   PERMISSION_ALLOW_ONLINE_OPERATION: 'permission.allow_online_operation',
 } as const;
 
-const FORCE_CHANGE_OPTIONS = [
-  { label: '是', value: 'true' },
-  { label: '否', value: 'false' },
+const BOOLEAN_OPTIONS = [
+  { label: 'true', value: 'true' },
+  { label: 'false', value: 'false' },
 ];
 
 const PASSWORD_ENCODER_OPTIONS = [
@@ -161,7 +164,34 @@ const SystemConfig: React.FC = () => {
             name="configValue"
             label="配置值"
             rules={[{ required: true, message: '请选择' }]}
-            options={FORCE_CHANGE_OPTIONS}
+            options={BOOLEAN_OPTIONS}
+            placeholder="请选择"
+          />
+        )}
+        {currentRow?.configKey === CONFIG_KEY.USER_LOGIN_CAPTCHA && (
+          <ProFormSelect
+            name="configValue"
+            label="配置值"
+            rules={[{ required: true, message: '请选择' }]}
+            options={BOOLEAN_OPTIONS}
+            placeholder="请选择"
+          />
+        )}
+        {currentRow?.configKey === CONFIG_KEY.USER_LOGIN_SAVE_LOGIN_FAIL && (
+          <ProFormSelect
+            name="configValue"
+            label="配置值"
+            rules={[{ required: true, message: '请选择' }]}
+            options={BOOLEAN_OPTIONS}
+            placeholder="请选择"
+          />
+        )}
+        {currentRow?.configKey === CONFIG_KEY.USER_LOGIN_ALLOW_MULTI_CLIENT && (
+          <ProFormSelect
+            name="configValue"
+            label="配置值"
+            rules={[{ required: true, message: '请选择' }]}
+            options={BOOLEAN_OPTIONS}
             placeholder="请选择"
           />
         )}
@@ -202,13 +232,16 @@ const SystemConfig: React.FC = () => {
             name="configValue"
             label="配置值"
             rules={[{ required: true, message: '请选择' }]}
-            options={FORCE_CHANGE_OPTIONS}
-            placeholder="请选择（是=允许在权限定义菜单操作，否=仅可查看）"
+            options={BOOLEAN_OPTIONS}
+            placeholder="请选择（true=允许在权限定义菜单操作，false=仅可查看）"
           />
         )}
         {currentRow?.configKey &&
           currentRow.configKey !== CONFIG_KEY.USER_INITIAL_PASSWORD &&
           currentRow.configKey !== CONFIG_KEY.USER_FORCE_CHANGE_PASSWORD &&
+          currentRow.configKey !== CONFIG_KEY.USER_LOGIN_CAPTCHA &&
+          currentRow.configKey !== CONFIG_KEY.USER_LOGIN_SAVE_LOGIN_FAIL &&
+          currentRow.configKey !== CONFIG_KEY.USER_LOGIN_ALLOW_MULTI_CLIENT &&
           currentRow.configKey !== CONFIG_KEY.PASSWORD_ENCODER &&
           currentRow.configKey !== CONFIG_KEY.USER_LOGIN_EXPIRE_HOURS &&
           currentRow.configKey !== CONFIG_KEY.PERMISSION_ALLOW_ONLINE_OPERATION && (

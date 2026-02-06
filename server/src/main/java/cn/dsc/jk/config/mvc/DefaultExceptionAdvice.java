@@ -18,7 +18,8 @@ public class DefaultExceptionAdvice {
 
     @ExceptionHandler(Throwable.class)
     public Result<?> defaultException(Throwable e) {
-        if (e instanceof ErrorResponse er) {
+        if (e instanceof ErrorResponse) {
+            ErrorResponse er = (ErrorResponse) e;
             int status = er.getStatusCode().value();
             if (status != 404) {
                 log.error(e.getMessage(), e);
