@@ -188,15 +188,10 @@ const Login: React.FC = () => {
             maxWidth: '75vw',
           }}
           logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle="Ant Design 是西湖区最具影响力的 Web 设计规范"
+          title="Just Know"
           initialValues={{
             autoLogin: true,
           }}
-          actions={[
-            <span key="loginWith">其他登录方式</span>,
-            <ActionIcons key="icons" />,
-          ]}
           onFinish={async (values) => {
             await handleSubmit(values as API.LoginParams);
           }}
@@ -287,13 +282,6 @@ const Login: React.FC = () => {
             <ProFormCheckbox noStyle name="autoLogin">
               自动登录
             </ProFormCheckbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-            >
-              忘记密码
-            </a>
           </div>
         </LoginForm>
       </div>
