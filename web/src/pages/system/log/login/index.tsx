@@ -9,7 +9,7 @@ import type {
 import { pageLoginLogs } from '@/services/ant-design-pro/loginLog';
 
 const LoginLogs: React.FC = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
 
   const columns: ProColumns<LoginLogItem>[] = [
     {
@@ -97,7 +97,6 @@ const LoginLogs: React.FC = () => {
         pagination={{
           pageSize: 10,
         }}
-        toolBarRender={false}
         rowSelection={false}
       />
     </PageContainer>

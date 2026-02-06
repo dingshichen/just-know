@@ -8,7 +8,7 @@ import type {
 import { pageOperateLogs } from '@/services/ant-design-pro/operateLog';
 
 const OperateLogs: React.FC = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
 
   const columns: ProColumns<OperateLogItem>[] = [
     {
@@ -84,7 +84,6 @@ const OperateLogs: React.FC = () => {
         pagination={{
           pageSize: 10,
         }}
-        toolBarRender={false}
         rowSelection={false}
       />
     </PageContainer>
