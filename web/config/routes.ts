@@ -311,6 +311,12 @@ export default [
         component: './system/config',
       },
       {
+        name: 'notice',
+        icon: 'smile',
+        path: '/system/notice',
+        component: './system/notice',
+      },
+      {
         name: 'log',
         icon: 'profile',
         path: '/system/log',

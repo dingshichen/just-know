@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsc.jk.mapper.NoticeMapper">
+
+    <!-- Base Result Map -->
+    <resultMap id="baseResultMap" type="cn.dsc.jk.entity.NoticeEntity">
+        <id column="notice_id" property="noticeId" jdbcType="BIGINT"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="LONGVARCHAR"/>
+        <result column="start_date" property="startDate" jdbcType="DATE"/>
+        <result column="end_date" property="endDate" jdbcType="DATE"/>
+        <result column="notice_status" property="noticeStatus" jdbcType="VARCHAR"/>
+        <result column="created_user_id" property="createdUserId" jdbcType="BIGINT"/>
+        <result column="updated_user_id" property="updatedUserId" jdbcType="BIGINT"/>
+        <result column="created_time" property="createdTime" jdbcType="TIMESTAMP"/>
+        <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- Base Column List -->
+    <sql id="Base_Column_List">
+        notice_id,
+        title,
+        content,
+        start_date,
+        end_date,
+        notice_status,
+        created_user_id,
+        updated_user_id,
+        created_time,
+        updated_time
+    </sql>
+
+    <!-- Select list with conditions -->
+    <select id="selectList" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM notice
+        <where>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="noticeStatus != null and noticeStatus != ''">
+                AND notice_status = #{noticeStatus}
+            </if>
+        </where>
+        ORDER BY created_time DESC
+    </select>
+
+    <!-- Select unread notices for specific user -->
+    <select id="selectUnreadByUserId" resultMap="baseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM notice n
+        WHERE n.notice_status = 'PUBLISHED'
+          AND (n.start_date IS NULL OR n.start_date &lt;= CURRENT_DATE())
+          AND (n.end_date IS NULL OR n.end_date &gt;= CURRENT_DATE())
+          AND NOT EXISTS (
+            SELECT 1
+            FROM notice_read nr
+            WHERE nr.notice_id = n.notice_id
+              AND nr.user_id = #{userId}
+          )
+        ORDER BY n.created_time DESC
+    </select>
+
+</mapper>

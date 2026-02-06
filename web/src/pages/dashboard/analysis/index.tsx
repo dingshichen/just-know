@@ -1,11 +1,13 @@
 import { EllipsisOutlined } from '@ant-design/icons';
 import { GridContent } from '@ant-design/pro-components';
 import { useRequest } from '@umijs/max';
-import { Col, Dropdown, Row } from 'antd';
+import { Col, Dropdown, Modal, Row, Tabs, Typography } from 'antd';
 import type { RangePickerProps } from 'antd/es/date-picker';
 import type { Dayjs } from 'dayjs';
 import type { FC } from 'react';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import type { NoticeDetail } from '@/services/ant-design-pro/notice';
+import { listUnreadNotices, readNotice } from '@/services/ant-design-pro/notice';
 import IntroduceRow from './components/IntroduceRow';
 import OfflineData from './components/OfflineData';
 import PageLoading from './components/PageLoading';
@@ -31,7 +33,31 @@ const Analysis: FC<AnalysisProps> = () => {
   const [rangePickerValue, setRangePickerValue] = useState<RangePickerValue>(
     getTimeDistance('year'),
   );
+  const [unreadNotices, setUnreadNotices] = useState<NoticeDetail[]>([]);
+  const [noticeModalOpen, setNoticeModalOpen] = useState(false);
+  const [activeNoticeId, setActiveNoticeId] = useState<string>();
   const { loading, data } = useRequest(fakeChartData);
+
+  useEffect(() => {
+    const fetchUnreadNotices = async () => {
+      try {
+        const res = await listUnreadNotices();
+        const list = res?.data || [];
+        if (list.length > 0) {
+          setUnreadNotices(list);
+          setActiveNoticeId(list[0].noticeId);
+          setNoticeModalOpen(true);
+          // 首条公告视为已阅读
+          if (list[0].noticeId) {
+            readNotice(list[0].noticeId);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchUnreadNotices();
+  }, []);
   const selectDate = (type: TimeType) => {
     setRangePickerValue(getTimeDistance(type));
   };
@@ -96,6 +122,11 @@ const Analysis: FC<AnalysisProps> = () => {
     setCurrentTabKey(key);
   };
   const activeKey = currentTabKey || data?.offlineData[0]?.name || '';
+  const handleNoticeTabChange = (key: string) => {
+    setActiveNoticeId(key);
+    readNotice(key);
+  };
+  const activeNotice = unreadNotices.find((n) => n.noticeId === activeNoticeId);
   return (
     <GridContent>
       <Suspense fallback={<PageLoading />}>
@@ -151,6 +182,34 @@ const Analysis: FC<AnalysisProps> = () => {
           handleTabChange={handleTabChange}
         />
       </Suspense>
+      {noticeModalOpen && unreadNotices.length > 0 && (
+        <Modal
+          open={noticeModalOpen}
+          title="系统公告"
+          footer={null}
+          width={800}
+          onCancel={() => setNoticeModalOpen(false)}
+          destroyOnClose
+        >
+          <Tabs
+            tabPosition="left"
+            activeKey={activeNoticeId}
+            onChange={handleNoticeTabChange}
+            items={unreadNotices.map((n) => ({
+              key: n.noticeId,
+              label: n.title || '未命名公告',
+              children: (
+                <div>
+                  <Typography.Title level={4}>{n.title}</Typography.Title>
+                  <Typography.Paragraph>
+                    {n.content || '暂无内容'}
+                  </Typography.Paragraph>
+                </div>
+              ),
+            }))}
+          />
+        </Modal>
+      )}
     </GridContent>
   );
 };

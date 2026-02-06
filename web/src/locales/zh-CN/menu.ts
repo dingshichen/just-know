@@ -50,6 +50,7 @@ export default {
   'menu.editor.mind': '脑图编辑器',
   'menu.editor.koni': '拓扑编辑器',
   'menu.system': '系统管理',
+  'menu.system.notice': '系统公告',
   'menu.system.log': '日志中心',
   'menu.system.log.login-log': '登录日志',
   'menu.system.log.operate-log': '操作日志',
