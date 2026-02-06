@@ -71,12 +71,39 @@ export const layout: RunTimeLayoutConfig = ({
       title: <AvatarName />,
       render: (_, avatarChildren) => {
         const hasAvatar = !!initialState?.currentUser?.avatar;
+        const displayName =
+          initialState?.currentUser?.userName ||
+          initialState?.currentUser?.account ||
+          '用户';
         const content = hasAvatar ? (
           avatarChildren
         ) : (
           <Avatar icon={<UserOutlined />} size="default" />
         );
-        return <AvatarDropdown>{content}</AvatarDropdown>;
+        return (
+          <AvatarDropdown>
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                maxWidth: 220,
+              }}
+            >
+              {content}
+              <span
+                style={{
+                  maxWidth: 140,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {displayName}
+              </span>
+            </span>
+          </AvatarDropdown>
+        );
       },
     },
     waterMarkProps: {

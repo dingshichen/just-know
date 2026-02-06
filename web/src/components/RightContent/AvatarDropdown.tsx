@@ -7,10 +7,11 @@ import { history, useModel } from '@umijs/max';
 import type { MenuProps } from 'antd';
 import { Spin } from 'antd';
 import { createStyles } from 'antd-style';
-import React from 'react';
+import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { outLogin } from '@/services/ant-design-pro/api';
 import HeaderDropdown from '../HeaderDropdown';
+import PersonalSettingsModal from './PersonalSettingsModal';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -52,6 +53,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   /**
    * 退出登录，并且将当前的 url 保存
    */
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+
   const loginOut = async () => {
     await outLogin();
     const { search, pathname } = window.location;
@@ -80,6 +83,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
         setInitialState((s) => ({ ...s, currentUser: undefined }));
       });
       loginOut();
+      return;
+    }
+    if (key === 'settings') {
+      setSettingsModalOpen(true);
       return;
     }
     history.push(`/account/${key}`);
@@ -116,31 +123,47 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
             label: '个人中心',
           },
           {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: '个人设置',
-          },
-          {
             type: 'divider' as const,
           },
         ]
       : []),
     {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: '个人设置',
+    },
+    {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: '退出登录',
+      danger: true,
     },
   ];
 
   return (
-    <HeaderDropdown
-      menu={{
-        selectedKeys: [],
-        onClick: onMenuClick,
-        items: menuItems,
-      }}
-    >
-      {children}
-    </HeaderDropdown>
+    <>
+      <HeaderDropdown
+        menu={{
+          selectedKeys: [],
+          onClick: onMenuClick,
+          items: menuItems,
+        }}
+      >
+        {children}
+      </HeaderDropdown>
+      <PersonalSettingsModal
+        open={settingsModalOpen}
+        onCancel={() => setSettingsModalOpen(false)}
+        currentUser={currentUser}
+        onSuccess={() => {
+          // 保存成功后刷新当前用户信息（如头像）
+          initialState?.fetchUserInfo?.().then((user) => {
+            if (user) {
+              setInitialState((s) => ({ ...s, currentUser: user }));
+            }
+          });
+        }}
+      />
+    </>
   );
 };
