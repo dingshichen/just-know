@@ -1,9 +1,6 @@
 import {
-  AlipayCircleOutlined,
   LockOutlined,
-  TaobaoCircleOutlined,
   UserOutlined,
-  WeiboCircleOutlined,
 } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
 import { Helmet, useModel } from '@umijs/max';
@@ -40,27 +37,6 @@ const useStyles = createStyles(({ token }) => {
     },
   };
 });
-
-const ActionIcons = () => {
-  const { styles } = useStyles();
-
-  return (
-    <>
-      <AlipayCircleOutlined
-        key="AlipayCircleOutlined"
-        className={styles.action}
-      />
-      <TaobaoCircleOutlined
-        key="TaobaoCircleOutlined"
-        className={styles.action}
-      />
-      <WeiboCircleOutlined
-        key="WeiboCircleOutlined"
-        className={styles.action}
-      />
-    </>
-  );
-};
 
 const LoginMessage: React.FC<{
   content: string;
@@ -126,18 +102,13 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
-      if (!captchaDetail?.captchaId) {
-        showRequestError('验证码异常，请刷新重试');
-        await refreshCaptcha();
-        return;
-      }
       // 登录
       const res = await login(
         {
           username: (values as any).username,
           password: (values as any).password,
           captcha: (values as any).captcha,
-          captchaId: captchaDetail.captchaId,
+          captchaId: captchaDetail?.captchaId,
           autoLogin: (values as any).autoLogin,
           type,
         },
@@ -164,8 +135,6 @@ const Login: React.FC = () => {
       showRequestError('登录失败，请重试！');
     }
   };
-  const { status, type: loginType } = userLoginState;
-
   return (
     <div className={styles.container}>
       <Helmet>

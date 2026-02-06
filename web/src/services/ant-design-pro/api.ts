@@ -28,7 +28,7 @@ export async function login(
     /** 图片验证码内容 */
     captcha: string;
     /** 后端返回的验证码 ID */
-    captchaId: string;
+    captchaId?: string;
     autoLogin?: boolean;
     type?: string;
   },
