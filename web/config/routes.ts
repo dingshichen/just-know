@@ -263,29 +263,6 @@ export default [
     path: '/system',
     routes: [
       {
-        name: 'log',
-        icon: 'profile',
-        path: '/system/log',
-        routes: [
-          {
-            name: 'login-log',
-            icon: 'smile',
-            path: '/system/log/login',
-            component: './system/log/login',
-          },
-          {
-            name: 'operate-log',
-            icon: 'smile',
-            path: '/system/log/operate',
-            component: './system/log/operate',
-          },
-          {
-            path: '/system/log',
-            redirect: '/system/log/login',
-          },
-        ],
-      },
-      {
         name: 'user',
         icon: 'smile',
         path: '/system/user',
@@ -316,6 +293,12 @@ export default [
         component: './system/dept/detail',
       },
       {
+        name: 'permission',
+        icon: 'smile',
+        path: '/system/permission',
+        component: './system/permission',
+      },
+      {
         name: 'attach',
         icon: 'smile',
         path: '/system/attach',
@@ -328,10 +311,27 @@ export default [
         component: './system/config',
       },
       {
-        name: 'permission',
-        icon: 'smile',
-        path: '/system/permission',
-        component: './system/permission',
+        name: 'log',
+        icon: 'profile',
+        path: '/system/log',
+        routes: [
+          {
+            name: 'login-log',
+            icon: 'smile',
+            path: '/system/log/login',
+            component: './system/log/login',
+          },
+          {
+            name: 'operate-log',
+            icon: 'smile',
+            path: '/system/log/operate',
+            component: './system/log/operate',
+          },
+          {
+            path: '/system/log',
+            redirect: '/system/log/login',
+          },
+        ],
       },
       {
         path: '/system',
