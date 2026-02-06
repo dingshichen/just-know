@@ -22,7 +22,7 @@ public class OperateLogServiceImpl extends ServiceImpl<OperateLogMapper, Operate
         implements OperateLogService {
 
     @Override
-    public void recordOperateLog(Long userId, String ip, String browser, String device,
+    public void create(Long userId, String ip, String browser, String device,
                                  String opsModule, String opsName, Long costTime) {
         OperateLogEntity entity = new OperateLogEntity();
         entity.setUserId(userId);

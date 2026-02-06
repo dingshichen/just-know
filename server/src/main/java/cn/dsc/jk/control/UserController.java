@@ -2,6 +2,7 @@ package cn.dsc.jk.control;
 
 import cn.dsc.jk.common.Result;
 import cn.dsc.jk.common.ResultCode;
+import cn.dsc.jk.config.ops.OpsLog;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
 import cn.dsc.jk.dto.user.UserItem;
@@ -36,6 +37,7 @@ public class UserController {
      * @param create 新增用户请求
      * @return 用户ID
      */
+    @OpsLog(module = "用户管理", name = "新增用户")
     @PostMapping
     public Result<Long> create(@RequestBody UserCreate create) {
         Long userId = userService.create(create);
@@ -49,6 +51,7 @@ public class UserController {
      * @param update 修改用户请求
      * @return 操作结果
      */
+    @OpsLog(module = "用户管理", name = "修改用户")
     @PutMapping("/{userId}")
     public Result<?> update(@PathVariable Long userId, @RequestBody UserUpdate update) {
         userService.update(userId, update);
@@ -60,6 +63,7 @@ public class UserController {
      *
      * @param userId 用户ID
      */
+    @OpsLog(module = "用户管理", name = "删除用户")
     @DeleteMapping("/{userId}")
     public Result<?> delete(@PathVariable Long userId) {
         userService.delete(userId);
@@ -71,6 +75,7 @@ public class UserController {
      *
      * @param userIds 用户ID列表
      */
+    @OpsLog(module = "用户管理", name = "批量删除用户")
     @DeleteMapping("/batch")
     public Result<?> deleteBatch(@RequestParam("userIds") List<Long> userIds) {
         userService.deleteBatch(userIds);
@@ -93,6 +98,7 @@ public class UserController {
      * @param userId 用户ID
      * @return 用户详情
      */
+    @OpsLog(module = "用户管理", name = "根据ID查询用户详情")
     @GetMapping("/{userId}")
     public Result<UserDetail> load(@PathVariable Long userId) {
         UserDetail detail = userService.load(userId);
@@ -105,6 +111,7 @@ public class UserController {
      * @param query 查询条件
      * @return 分页结果
      */
+    @OpsLog(module = "用户管理", name = "分页查询用户列表")
     @GetMapping("/page")
     public Result<PageInfo<UserItem>> page(UserPageQuery query) {
         PageInfo<UserItem> pageInfo = userService.page(query);
@@ -117,6 +124,7 @@ public class UserController {
      * @param userId 用户ID
      * @return 操作结果
      */
+    @OpsLog(module = "用户管理", name = "锁定用户")
     @PutMapping("/{userId}/lock")
     public Result<?> lock(@PathVariable Long userId) {
         userService.lock(userId);
@@ -128,6 +136,7 @@ public class UserController {
      *
      * @param userId 用户ID
      */
+    @OpsLog(module = "用户管理", name = "解除锁定用户")
     @PutMapping("/{userId}/unlock")
     public Result<?> unlock(@PathVariable Long userId) {
         userService.unlock(userId);
@@ -139,6 +148,7 @@ public class UserController {
      *
      * @param userId 用户ID
      */
+    @OpsLog(module = "用户管理", name = "重置用户密码")
     @PutMapping("/{userId}/reset-password")
     public Result<?> resetPassword(@PathVariable Long userId) {
         userService.resetPassword(userId);
@@ -151,6 +161,7 @@ public class UserController {
      * @param userId 用户ID
      * @param roleIds 角色ID列表
      */
+    @OpsLog(module = "用户管理", name = "分配角色")
     @PutMapping("/{userId}/roles")
     public Result<?> assignRoles(@PathVariable Long userId, @RequestBody List<Long> roleIds) {
         userService.assignRoles(userId, roleIds);

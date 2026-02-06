@@ -24,7 +24,7 @@ public interface OperateLogService extends IService<OperateLogEntity> {
      * @param opsName   操作名称（按钮或 API 中文名称）
      * @param costTime  消耗时间，单位：毫秒
      */
-    void recordOperateLog(Long userId,
+    void create(Long userId,
                           String ip,
                           String browser,
                           String device,
