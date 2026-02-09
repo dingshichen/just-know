@@ -3,19 +3,29 @@
 import { request } from '@umijs/max';
 
 /**
+ * 登录日志选项
+ */
+export class LoginLogOption {
+  logId: string;
+  loginAccount: string;
+  constructor(logId: string, loginAccount: string) {
+    this.logId = logId;
+    this.loginAccount = loginAccount;
+  }
+}
+
+/**
  * 登录日志列表项
  * 对应后端的 LoginLogItem DTO
  */
-export type LoginLogItem = {
-  logId: string;
+export class LoginLogItem extends LoginLogOption {
   loginUserId?: string;
-  loginAccount?: string;
   ip?: string;
   browser?: string;
   device?: string;
   loginActionType?: string;
   createdTime?: string;
-};
+}
 
 /**
  * 登录日志分页查询参数

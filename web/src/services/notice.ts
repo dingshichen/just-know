@@ -3,26 +3,35 @@
 import { request } from '@umijs/max';
 
 /**
+ * 公告选项
+ */
+export class NoticeOption {
+  noticeId: string;
+  title: string;
+  constructor(noticeId: string, title: string) {
+    this.noticeId = noticeId;
+    this.title = title;
+  }
+}
+
+/**
  * 公告列表项
  * 对应后端的 NoticeItem DTO
- * 主键ID在前端强制使用 string 类型，避免精度问题
  */
-export type NoticeItem = {
-  noticeId: string;
-  title?: string;
+export class NoticeItem extends NoticeOption {
   content?: string;
   noticeStatus?: string;
   startDate?: string;
   endDate?: string;
   createdTime?: string;
   updatedTime?: string;
-};
+}
 
 /**
  * 公告详情
  * 对应后端的 NoticeDetail DTO
  */
-export type NoticeDetail = NoticeItem;
+export class NoticeDetail extends NoticeItem {}
 
 /**
  * 公告分页查询参数

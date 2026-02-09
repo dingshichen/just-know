@@ -3,18 +3,28 @@
 import { request } from '@umijs/max';
 
 /**
+ * 系统配置选项
+ */
+export class SystemConfigOption {
+  configId: string;
+  configName: string;
+  constructor(configId: string, configName: string) {
+    this.configId = configId;
+    this.configName = configName;
+  }
+}
+
+/**
  * 系统配置列表项
  * 对应后端的 SystemConfigItem DTO
  */
-export type SystemConfigItem = {
-  configId?: number;
-  configName: string;
-  configKey: string;
+export class SystemConfigItem extends SystemConfigOption {
+  configKey?: string;
   configValue?: string;
   configDesc?: string;
   createdTime?: string;
   updatedTime?: string;
-};
+}
 
 /**
  * 通用接口返回结构

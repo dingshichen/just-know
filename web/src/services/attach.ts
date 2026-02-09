@@ -2,25 +2,30 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
+/**
+ * 附件选项
+ */
 export class AttachOption {
-  attachId?: number;
-  title?: string;
+  attachId: string;
+  title: string;
   attachUrl?: string;
+  constructor(attachId: string, title: string) {
+    this.attachId = attachId;
+    this.title = title;
+  }
 }
 
 /**
- * 附件列表项，对应后端 AttachItem
+ * 附件列表项
+ * 对应后端的 AttachItem DTO
  */
-export type AttachItem = {
-  attachId: string;
-  title: string;
+export class AttachItem extends AttachOption {
   storageType?: string;
   attachType?: string;
-  attachUrl?: string;
   attachSize?: number;
   createdTime?: string;
   updatedTime?: string;
-};
+}
 
 /**
  * 附件分页查询参数
@@ -95,7 +100,7 @@ export async function uploadAttach(file: File) {
  * 下载附件（触发浏览器下载）
  * GET /api/attach/download/{attachId}
  */
-export async function downloadAttachFile(attachId: number, filename: string) {
+export async function downloadAttachFile(attachId: string, filename: string) {
   const blob = await request<Blob>('/api/attach/download/' + attachId, {
     method: 'GET',
     responseType: 'blob',
@@ -112,7 +117,7 @@ export async function downloadAttachFile(attachId: number, filename: string) {
  * 删除附件
  * DELETE /api/attach/{attachId}
  */
-export async function deleteAttach(attachId: number) {
+export async function deleteAttach(attachId: string) {
   return request<Result<void>>(`/api/attach/${attachId}`, {
     method: 'DELETE',
   });
@@ -122,7 +127,7 @@ export async function deleteAttach(attachId: number) {
  * 批量删除附件
  * DELETE /api/attach/batch
  */
-export async function batchDeleteAttaches(attachIds: number[]) {
+export async function batchDeleteAttaches(attachIds: string[]) {
   return request<Result<void>>('/api/attach/batch', {
     method: 'DELETE',
     data: attachIds,

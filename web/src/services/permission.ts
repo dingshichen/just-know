@@ -3,16 +3,26 @@
 import { request } from '@umijs/max';
 
 /**
+ * 权限选项
+ */
+export class PermissionOption {
+  permissionId: string;
+  permissionName: string;
+  constructor(permissionId: string, permissionName: string) {
+    this.permissionId = permissionId;
+    this.permissionName = permissionName;
+  }
+}
+
+/**
  * 权限列表项
  * 对应后端的 PermissionItem DTO
  */
-export type PermissionItem = {
-  permissionId: string;
-  permissionName: string;
+export class PermissionItem extends PermissionOption {
   permissionCode?: string;
   createdTime?: string;
   updatedTime?: string;
-};
+}
 
 /**
  * 权限分页查询参数

@@ -3,20 +3,30 @@
 import { request } from '@umijs/max';
 
 /**
+ * 操作日志选项
+ */
+export class OperateLogOption {
+  logId: string;
+  opsName: string;
+  constructor(logId: string, opsName: string) {
+    this.logId = logId;
+    this.opsName = opsName;
+  }
+}
+
+/**
  * 操作日志列表项
  * 对应后端的 OperateLogItem DTO
  */
-export type OperateLogItem = {
-  logId: string;
+export class OperateLogItem extends OperateLogOption {
   userId?: string;
   ip?: string;
   browser?: string;
   device?: string;
   opsModule?: string;
-  opsName?: string;
   costTime?: number;
   createdTime?: string;
-};
+}
 
 /**
  * 操作日志分页查询参数

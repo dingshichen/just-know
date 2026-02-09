@@ -211,7 +211,7 @@ const AttachList: FC = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await batchDeleteAttaches(selectedRowKeys as number[]);
+          await batchDeleteAttaches(selectedRowKeys as string[]);
           message.success('批量删除成功');
           setSelectedRowKeys([]);
           refreshListAndStats();
