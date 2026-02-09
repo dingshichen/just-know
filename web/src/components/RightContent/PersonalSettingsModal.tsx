@@ -1,10 +1,9 @@
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { App, Avatar, Form, Input, Modal, Select, Upload } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getUserDetail, updateUser, type UserForm } from '@/services/user';
+import { getUserDetail, updateUser, UserDetail, type UserForm } from '@/services/user';
 import { uploadAttach } from '@/services/attach';
-import type { API } from '@/services/typings';
-import type { UserAvatarOption } from '@/services/user';
+import { AttachOption } from '@/services/attach';
 
 export type PersonalSettingsModalProps = {
   open: boolean;
@@ -19,35 +18,11 @@ const getAvatarUrl = (attachId: string | number) =>
 /** 从多种格式解析头像展示 URL（含 mock 的 avatarUrl） */
 const getDisplayAvatarUrl = (
   user:
-    | (API.CurrentUser & {
-        avatar?: string | UserAvatarOption | { attachId?: string };
-        avatarUrl?: string;
-      })
-    | null
+    | UserDetail
     | undefined,
 ) => {
   if (!user) return undefined;
-  if ((user as any).avatarUrl) return (user as any).avatarUrl;
-  if (!user.avatar) return undefined;
-  if (typeof user.avatar === 'string') return user.avatar;
-  const avatar = user.avatar as UserAvatarOption | { attachId?: string };
-  if (avatar?.attachId != null) return getAvatarUrl(avatar.attachId);
-  return undefined;
-};
-
-/** 用户详情扩展类型（getUserDetail 实际返回） */
-type UserDetailData = {
-  userId: string;
-  userName?: string;
-  account?: string;
-  gender?: string;
-  phone?: string;
-  email?: string;
-  avatar?: UserAvatarOption | { attachId?: string };
-  depts?: { deptId?: string; deptName?: string }[];
-  deptIds?: string[];
-  deptNames?: string[];
-  roles?: { roleId?: number | string; roleName?: string }[];
+  return user.avatar?.attachId != null ? getAvatarUrl(user.avatar.attachId) : undefined;
 };
 
 const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
@@ -58,7 +33,7 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
 }) => {
   const { message } = App.useApp();
   const [form] = Form.useForm<{ gender?: string; email?: string; avatarAttachId?: string }>();
-  const [detail, setDetail] = useState<UserDetailData | null>(null);
+  const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | undefined>();
@@ -74,7 +49,7 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
       getUserDetail(userId)
         .then((res) => {
           if (res.code === 0 && res.data) {
-            const d = res.data as UserDetailData;
+            const d = res.data as UserDetail;
             setDetail(d);
             form.setFieldsValue({
               gender: d.gender,
@@ -137,7 +112,7 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
         email: values.email,
         phone: detail.phone,
         ...(avatarAttachId ? { avatarAttachId } : {}),
-        deptIds: detail.deptIds ?? detail.depts?.map((d) => d.deptId ?? '').filter(Boolean) ?? [],
+        deptIds: detail.depts?.map((d) => d.deptId ?? '').filter(Boolean) ?? [],
         roleIds:
           detail.roles?.map((r) =>
             r.roleId != null ? String(r.roleId) : (r.roleName ?? ''),
@@ -154,7 +129,7 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
     }
   };
 
-  const deptNames = detail?.deptNames ?? detail?.depts?.map((d) => d.deptName).filter(Boolean) ?? [];
+  const deptNames = detail?.depts?.map((d) => d.deptName).filter(Boolean) ?? [];
   const roleNames = detail?.roles?.map((r) => r.roleName).filter(Boolean) ?? [];
   const displayAvatarUrl = avatarPreviewUrl ?? (detail ? getDisplayAvatarUrl(detail as any) : undefined);
 
