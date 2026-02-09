@@ -3,6 +3,7 @@ package cn.dsc.jk.service;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
 import cn.dsc.jk.dto.user.UserItem;
+import cn.dsc.jk.dto.user.UserOption;
 import cn.dsc.jk.dto.user.UserPageQuery;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
@@ -20,6 +21,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
  * @author ding.shichen
  */
 public interface UserService extends IService<UserEntity>, UserDetailsService {
+
+    /**
+     * 根据用户ID查询用户选项
+     *
+     * @param userId 用户ID
+     * @return 用户选项
+     */
+    UserOption selectById(Long userId);
+
+    /**
+     * 根据ID列表查询用户选项
+     *
+     * @param userIds 用户ID列表
+     * @return 用户选项列表
+     */
+    List<UserOption> selectByIds(List<Long> userIds);
 
     /**
      * 新增用户

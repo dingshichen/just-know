@@ -290,32 +290,4 @@ public class SessionTokenContext {
         return validSessionInfos;
     }
 
-    /**
-     * 检查用户是否在线
-     *
-     * @param userId 用户ID
-     * @return 是否在线
-     */
-    public boolean isUserOnline(Long userId) {
-        if (userId == null) {
-            return false;
-        }
-        String userTokensKey = USER_TOKENS_KEY_PREFIX + userId;
-        RSet<LoginSessionInfo> userTokens = redissonClient.getSet(userTokensKey);
-        
-        Set<LoginSessionInfo> sessionInfos = userTokens.readAll();
-        // 检查是否有有效的token
-        for (LoginSessionInfo sessionInfo : sessionInfos) {
-            String token = sessionInfo.getToken();
-            if (token != null) {
-                String sessionKey = SESSION_KEY_PREFIX + token;
-                RBucket<UserSimpleDetail> bucket = redissonClient.getBucket(sessionKey);
-                if (bucket.isExists()) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
 }

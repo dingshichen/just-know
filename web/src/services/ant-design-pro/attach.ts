@@ -2,6 +2,12 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
+export class AttachOption {
+  attachId?: number;
+  title?: string;
+  attachUrl?: string;
+}
+
 /**
  * 附件列表项，对应后端 AttachItem
  */

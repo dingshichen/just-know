@@ -45,6 +45,7 @@ import {
 import { listDeptTree, type DeptItem } from '@/services/ant-design-pro/dept';
 import { uploadAttach } from '@/services/ant-design-pro/attach';
 import { pageRoles } from '@/services/ant-design-pro/role';
+import UserDetailModal from './detail';
 
 const Users: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
@@ -609,144 +610,14 @@ const Users: React.FC = () => {
         }}
       />
 
-      <Modal
-        title="用户详情"
+      <UserDetailModal
+        userId={detailRow?.userId}
         open={detailModalOpen}
-        footer={null}
-        confirmLoading={detailLoading}
-        onCancel={() => {
+        onClose={() => {
           setDetailModalOpen(false);
           setDetailRow(null);
         }}
-      >
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="头像">
-            {getDisplayAvatarUrl(detailRow) ? (
-              <Avatar
-                src={getDisplayAvatarUrl(detailRow)}
-                size={64}
-                icon={<UserOutlined />}
-              />
-            ) : (
-              <Avatar size={64} icon={<UserOutlined />} />
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="用户姓名">
-            {detailRow?.userName || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="账号">
-            {detailRow?.account || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="性别">
-            {detailRow?.gender || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="手机号码">
-            {detailRow?.phone || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="电子邮箱">
-            {detailRow?.email || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="所属部门">
-            {(() => {
-              const names =
-                (detailRow?.deptNames && detailRow.deptNames.length > 0
-                  ? detailRow.deptNames
-                  : detailRow?.depts?.map((d) => d.deptName)) || [];
-              return names.length > 0
-                ? names.map((name) => (
-                    <Tag key={name} style={{ marginRight: 4 }}>
-                      {name}
-                    </Tag>
-                  ))
-                : '-';
-            })()}
-          </Descriptions.Item>
-          <Descriptions.Item label="角色">
-            {detailRow?.roles && detailRow.roles.length > 0
-              ? detailRow.roles.map((role) => {
-                  const isAdmin = role.roleName === '系统管理员';
-                  return (
-                    <Tag
-                      key={role.roleId ?? role.roleName}
-                      color={isAdmin ? 'red' : undefined}
-                      style={{ marginRight: 4 }}
-                    >
-                      {role.roleName}
-                    </Tag>
-                  );
-                })
-              : '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="锁定状态">
-            {detailRow?.lockedFlag ? (
-              <Tag color="red">已锁定</Tag>
-            ) : (
-              <Tag color="green">正常</Tag>
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="在线状态">
-            {detailRow?.online ? (
-              <Space>
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: '#52c41a',
-                    display: 'inline-block',
-                  }}
-                />
-                <span>在线</span>
-                {detailRow?.loginSessions && detailRow.loginSessions.length > 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    {detailRow.loginSessions.map((session, index) => (
-                      <div key={index} style={{ marginTop: index > 0 ? 8 : 0 }}>
-                        <div>
-                          <strong>设备：</strong>
-                          {session.device || '未知设备'}
-                        </div>
-                        <div>
-                          <strong>IP：</strong>
-                          {session.ip || '未知IP'}
-                        </div>
-                        <div>
-                          <strong>浏览器：</strong>
-                          {session.browser || '未知浏览器'}
-                        </div>
-                        {session.loginTime && (
-                          <div>
-                            <strong>登录时间：</strong>
-                            {session.loginTime}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Space>
-            ) : (
-              <Space>
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: '#d9d9d9',
-                    display: 'inline-block',
-                  }}
-                />
-                <span>离线</span>
-              </Space>
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {detailRow?.createdTime || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="更新时间">
-            {detailRow?.updatedTime || '-'}
-          </Descriptions.Item>
-        </Descriptions>
-      </Modal>
+      />
 
       <ModalForm<UserForm>
         title="新建用户"

@@ -12,6 +12,7 @@ import cn.dsc.jk.dto.user.UserConvert;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;
 import cn.dsc.jk.dto.user.UserItem;
+import cn.dsc.jk.dto.user.UserOption;
 import cn.dsc.jk.dto.user.UserPageQuery;
 import cn.dsc.jk.dto.user.UserSimpleDetail;
 import cn.dsc.jk.dto.user.UserUpdate;
@@ -76,6 +77,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
 
     @Autowired
     private SessionTokenContext sessionTokenContext;
+
+    @Override
+    public UserOption selectById(Long userId) {
+        UserEntity entity = this.getById(userId);
+        if (entity == null) {
+            return null;
+        }
+        return UserConvert.FU_TO_OPTION.apply(entity);
+    }
+
+    @Override
+    public List<UserOption> selectByIds(List<Long> userIds) {
+        return this.baseMapper.selectBatchIds(userIds).stream().map(UserConvert.FU_TO_OPTION).collect(Collectors.toList());
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -217,16 +232,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         AttachOption avatar = attachService.getOptionById(entity.getAvatarAttachId());
         detail.setAvatar(avatar);
 
-        // 加载用户在线状态和登录会话信息
-        boolean isOnline = sessionTokenContext.isUserOnline(userId);
-        detail.setOnline(isOnline);
-        if (isOnline) {
-            List<LoginSessionInfo> loginSessions = sessionTokenContext.getUserLoginSessions(userId);
-            detail.setLoginSessions(loginSessions);
-        } else {
-            detail.setLoginSessions(new java.util.ArrayList<>());
-        }
-
+        // 加载用户登录会话信息
+        List<LoginSessionInfo> loginSessions = sessionTokenContext.getUserLoginSessions(userId);
+        detail.setLoginSessions(loginSessions);
+        
+        // 加载创建用户和更新用户
+        detail.setCreatedUser(this.selectById(entity.getCreatedUserId()));
+        detail.setUpdatedUser(this.selectById(entity.getUpdatedUserId()));
         return detail;
     }
 

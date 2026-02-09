@@ -3,37 +3,45 @@
 import { request } from '@umijs/max';
 import type { DeptItem } from './dept';
 import type { RoleItem } from './role';
+import type { AttachOption } from './attach';
 
-/**
- * 头像附件选项，对应后端 AttachOption
- */
-export type UserAvatarOption = {
-  attachId?: string;
-  title?: string;
-  attachUrl?: string;
-};
 
-/**
- * 用户列表项
- * 对应后端的 UserItem DTO（头像字段为 avatar: AttachOption）
- */
-export type UserItem = {
+export class UserOption {
   userId: string;
   userName: string;
+  constructor(userId: string, userName: string) {
+    this.userId = userId;
+    this.userName = userName;
+  }
+}
+
+export class UserItem extends UserOption {
   account?: string;
   gender?: string;
   phone?: string;
   email?: string;
-  /**
-   * 头像附件信息（后端返回的 AttachOption）
-   */
-  avatar?: UserAvatarOption;
   lockedFlag?: boolean;
+  avatar?: AttachOption;
   roles?: RoleItem[];
   depts?: DeptItem[];
   createdTime?: string;
   updatedTime?: string;
-};
+}
+
+export class LoginSessionInfo {
+  device?: string;
+  ip?: string;
+  browser?: string;
+  loginTime?: string;
+  token?: string;
+}
+
+export class UserDetail extends UserItem {
+  loginSessions?: LoginSessionInfo[];
+  createdUser?: UserOption;
+  updatedUser?: UserOption;
+}
+
 
 /**
  * 用户分页查询参数
@@ -189,16 +197,7 @@ export async function resetUserPassword(userId: string) {
  * GET /api/user/{userId}
  */
 export async function getUserDetail(userId: string) {
-  return request<Result<{
-    userId: string;
-    userName: string;
-    account?: string;
-    gender?: string;
-    phone?: string;
-    email?: string;
-    deptIds?: string[];
-    deptNames?: string[];
-  }>>(`/api/user/${userId}`, {
+  return request<Result<UserDetail>>(`/api/user/${userId}`, {
     method: 'GET',
   });
 }
