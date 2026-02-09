@@ -4,8 +4,8 @@ import React, { useRef } from 'react';
 import type {
   OperateLogItem,
   OperateLogPageParams,
-} from '@/services/ant-design-pro/operateLog';
-import { pageOperateLogs } from '@/services/ant-design-pro/operateLog';
+} from '@/services/operateLog';
+import { pageOperateLogs } from '@/services/operateLog';
 
 const OperateLogs: React.FC = () => {
   const actionRef = useRef<ActionType>(null);

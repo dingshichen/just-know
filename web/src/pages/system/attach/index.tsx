@@ -24,7 +24,7 @@ import type { UploadProps } from 'antd';
 import dayjs from 'dayjs';
 import type { FC } from 'react';
 import React, { useState } from 'react';
-import type { AttachItem } from '@/services/ant-design-pro/attach';
+import type { AttachItem } from '@/services/attach';
 import {
   batchDeleteAttaches,
   deleteAttach,
@@ -32,7 +32,7 @@ import {
   getAttachStats,
   pageAttaches,
   uploadAttach,
-} from '@/services/ant-design-pro/attach';
+} from '@/services/attach';
 import useStyles from './style.style';
 
 const { Search } = Input;

@@ -2,8 +2,8 @@ import { PageContainer } from '@ant-design/pro-components';
 import { history, useParams } from '@umijs/max';
 import { Card, Descriptions, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import type { DeptItem } from '@/services/ant-design-pro/dept';
-import { getDeptDetail } from '@/services/ant-design-pro/dept';
+import type { DeptItem } from '@/services/dept';
+import { getDeptDetail } from '@/services/dept';
 
 const DeptDetailPage: React.FC = () => {
   const { deptId } = useParams<{ deptId: string }>();

@@ -5,8 +5,8 @@ import React, { useRef } from 'react';
 import type {
   LoginLogItem,
   LoginLogPageParams,
-} from '@/services/ant-design-pro/loginLog';
-import { pageLoginLogs } from '@/services/ant-design-pro/loginLog';
+} from '@/services/loginLog';
+import { pageLoginLogs } from '@/services/loginLog';
 
 const LoginLogs: React.FC = () => {
   const actionRef = useRef<ActionType>(null);

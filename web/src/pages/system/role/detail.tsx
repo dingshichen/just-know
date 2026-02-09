@@ -2,8 +2,8 @@ import { PageContainer } from '@ant-design/pro-components';
 import { history, useParams } from '@umijs/max';
 import { Card, Descriptions, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import type { RoleItem } from '@/services/ant-design-pro/role';
-import { getRoleDetail } from '@/services/ant-design-pro/role';
+import type { RoleItem } from '@/services/role';
+import { getRoleDetail } from '@/services/role';
 
 const RoleDetailPage: React.FC = () => {
   const { roleId } = useParams<{ roleId: string }>();

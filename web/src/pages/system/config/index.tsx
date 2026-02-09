@@ -9,11 +9,11 @@ import {
 } from '@ant-design/pro-components';
 import { App } from 'antd';
 import React, { useRef, useState } from 'react';
-import type { SystemConfigItem } from '@/services/ant-design-pro/systemConfig';
+import type { SystemConfigItem } from '@/services/systemConfig';
 import {
   listSystemConfigs,
   updateSystemConfigValue,
-} from '@/services/ant-design-pro/systemConfig';
+} from '@/services/systemConfig';
 
 /** 与后端 SystemConfigKey 对齐的配置键 */
 const CONFIG_KEY = {

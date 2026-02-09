@@ -1,9 +1,9 @@
 import { ModalForm, ProFormSelect, ProFormText, ProFormTreeSelect } from "@ant-design/pro-components";
-import { UserForm } from "@/services/ant-design-pro/user";
+import { UserForm } from "@/services/user";
 import { Form, Upload } from "antd";
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { listAllRoles, RoleItem } from "@/services/ant-design-pro/role";
+import { listAllRoles, RoleItem } from "@/services/role";
 import { useState } from "react";
 import { DataNode } from "antd/es/tree";
 

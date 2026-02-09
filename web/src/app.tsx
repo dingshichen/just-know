@@ -8,7 +8,7 @@ import {
   AvatarDropdown,
   AvatarName,
 } from '@/components';
-import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
+import { currentUser as queryCurrentUser } from '@/services/api';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import '@ant-design/v5-patch-for-react-19';

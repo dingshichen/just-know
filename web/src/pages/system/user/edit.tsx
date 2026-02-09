@@ -1,12 +1,12 @@
 import { ModalForm, ProFormSelect, ProFormText, ProFormTreeSelect } from "@ant-design/pro-components";
-import { getUserDetail, UserDetail, UserForm } from "@/services/ant-design-pro/user";
+import { getUserDetail, UserDetail, UserForm } from "@/services/user";
 import { Form, Upload } from "antd";
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { listAllRoles, RoleItem, RoleOption } from "@/services/ant-design-pro/role";
+import { listAllRoles, RoleItem, RoleOption } from "@/services/role";
 import { useEffect, useState } from "react";
 import { DataNode } from "antd/es/tree";
-import { DeptOption } from "@/services/ant-design-pro/dept";
+import { DeptOption } from "@/services/dept";
 
 export type UserEditModalProps = {
     userId: string;

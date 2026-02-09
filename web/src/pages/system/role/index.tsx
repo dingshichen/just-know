@@ -13,7 +13,7 @@ import type {
   RoleForm,
   RoleItem,
   RolePageParams,
-} from '@/services/ant-design-pro/role';
+} from '@/services/role';
 import {
   batchDeleteRoles,
   createRole,
@@ -21,7 +21,7 @@ import {
   getRoleDetail,
   pageRoles,
   updateRole,
-} from '@/services/ant-design-pro/role';
+} from '@/services/role';
 
 const Roles: React.FC = () => {
   const actionRef = useRef<ActionType>();

@@ -1,10 +1,10 @@
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { App, Avatar, Form, Input, Modal, Select, Upload } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getUserDetail, updateUser, type UserForm } from '@/services/ant-design-pro/user';
-import { uploadAttach } from '@/services/ant-design-pro/attach';
-import type { API } from '@/services/ant-design-pro/typings';
-import type { UserAvatarOption } from '@/services/ant-design-pro/user';
+import { getUserDetail, updateUser, type UserForm } from '@/services/user';
+import { uploadAttach } from '@/services/attach';
+import type { API } from '@/services/typings';
+import type { UserAvatarOption } from '@/services/user';
 
 export type PersonalSettingsModalProps = {
   open: boolean;

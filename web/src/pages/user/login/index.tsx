@@ -9,8 +9,8 @@ import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
-import { getCaptcha } from '@/services/ant-design-pro/login';
+import { login } from '@/services/api';
+import { getCaptcha } from '@/services/login';
 import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {

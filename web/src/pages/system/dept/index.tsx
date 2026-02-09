@@ -11,7 +11,7 @@ import {
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Form, Modal, Popconfirm } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-import type { DeptForm, DeptItem } from '@/services/ant-design-pro/dept';
+import type { DeptForm, DeptItem } from '@/services/dept';
 import {
   batchDeleteDepts,
   createDept,
@@ -19,7 +19,7 @@ import {
   getDeptDetail,
   listDeptTree,
   updateDept,
-} from '@/services/ant-design-pro/dept';
+} from '@/services/dept';
 
 const Dept: React.FC = () => {
   const actionRef = useRef<ActionType | undefined>(undefined);

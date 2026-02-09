@@ -12,7 +12,7 @@ import type {
   PermissionForm,
   PermissionItem,
   PermissionPageParams,
-} from '@/services/ant-design-pro/permission';
+} from '@/services/permission';
 import {
   batchDeletePermissions,
   createPermission,
@@ -20,8 +20,8 @@ import {
   getPermissionDetail,
   pagePermissions,
   updatePermission,
-} from '@/services/ant-design-pro/permission';
-import { listSystemConfigs } from '@/services/ant-design-pro/systemConfig';
+} from '@/services/permission';
+import { listSystemConfigs } from '@/services/systemConfig';
 
 const Permissions: React.FC = () => {
   const actionRef = useRef<ActionType>();

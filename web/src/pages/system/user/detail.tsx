@@ -1,6 +1,6 @@
 import { Avatar, Descriptions, Modal, Space, Tag } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getUserDetail, UserDetail } from '@/services/ant-design-pro/user';
+import { getUserDetail, UserDetail } from '@/services/user';
 import { UserOutlined } from '@ant-design/icons';
 
 type UserDetailProps = {

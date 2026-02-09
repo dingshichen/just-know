@@ -16,7 +16,7 @@ import type {
   NoticeForm,
   NoticeItem,
   NoticePageParams,
-} from '@/services/ant-design-pro/notice';
+} from '@/services/notice';
 import {
   batchDeleteNotices,
   createNotice,
@@ -25,7 +25,7 @@ import {
   pageNotices,
   publishNotice,
   updateNotice,
-} from '@/services/ant-design-pro/notice';
+} from '@/services/notice';
 
 const NoticePage: React.FC = () => {
   const actionRef = useRef<ActionType>(null);

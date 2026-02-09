@@ -21,7 +21,7 @@ import {
   type UserForm,
   type UserItem,
   type UserPageParams,
-} from '@/services/ant-design-pro/user';
+} from '@/services/user';
 import {
   batchDeleteUsers,
   createUser,
@@ -32,10 +32,10 @@ import {
   resetUserPassword,
   unlockUser,
   updateUser,
-} from '@/services/ant-design-pro/user';
-import { listDeptTree, type DeptItem } from '@/services/ant-design-pro/dept';
-import { uploadAttach } from '@/services/ant-design-pro/attach';
-import { pageRoles } from '@/services/ant-design-pro/role';
+} from '@/services/user';
+import { listDeptTree, type DeptItem } from '@/services/dept';
+import { uploadAttach } from '@/services/attach';
+import { pageRoles } from '@/services/role';
 import UserDetailModal from './detail';
 import UserCreateModal from './create';
 import UserEditModal from './edit';
