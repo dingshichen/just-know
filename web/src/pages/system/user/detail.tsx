@@ -4,7 +4,7 @@ import { getUserDetail, UserDetail } from '@/services/ant-design-pro/user';
 import { UserOutlined } from '@ant-design/icons';
 
 type UserDetailProps = {
-  userId?: string;
+  userId: string;
   open: boolean;
   onClose: () => void;
 };

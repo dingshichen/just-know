@@ -3,12 +3,22 @@
 import { request } from '@umijs/max';
 
 /**
+ * 机构选项
+ */
+export class DeptOption {
+  deptId: string;
+  deptName: string;
+  constructor(deptId: string, deptName: string) {
+    this.deptId = deptId;
+    this.deptName = deptName;
+  }
+}
+
+/**
  * 机构列表项
  * 对应后端的 DeptItem DTO
  */
-export type DeptItem = {
-  deptId: string;
-  deptName: string;
+export class DeptItem extends DeptOption {
   deptCode?: string;
   deptDesc?: string;
   parentDeptId?: string;
@@ -16,7 +26,7 @@ export type DeptItem = {
   createdTime?: string;
   updatedTime?: string;
   children?: DeptItem[];
-};
+}
 
 /**
  * 机构分页查询参数

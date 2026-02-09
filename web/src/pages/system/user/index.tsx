@@ -1,25 +1,17 @@
-import { PlusOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
+import { PlusOutlined, UserOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  ModalForm,
   PageContainer,
-  ProFormSelect,
-  ProFormText,
-  ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
 import {
   App,
   Avatar,
   Button,
-  Descriptions,
   Dropdown,
-  Form,
   Modal,
-  Upload,
   Popconfirm,
   Tag,
-  Space,
 } from 'antd';
 import type { MenuProps } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
@@ -35,7 +27,6 @@ import {
   createUser,
   deleteUser,
   getUserDetail,
-  getUserDeptIds,
   lockUser,
   pageUsers,
   resetUserPassword,
@@ -46,36 +37,17 @@ import { listDeptTree, type DeptItem } from '@/services/ant-design-pro/dept';
 import { uploadAttach } from '@/services/ant-design-pro/attach';
 import { pageRoles } from '@/services/ant-design-pro/role';
 import UserDetailModal from './detail';
+import UserCreateModal from './create';
+import UserEditModal from './edit';
 
 const Users: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [createForm] = Form.useForm<UserForm>();
-  const [currentRow, setCurrentRow] = useState<UserItem | undefined>();
+  const [currentId, setCurrentId] = useState<string | undefined>();
   const [selectedRows, setSelectedRows] = useState<UserItem[]>([]);
   const [deptTree, setDeptTree] = useState<DeptItem[]>([]);
-  const [editDeptIds, setEditDeptIds] = useState<string[]>([]);
-  const editInitialValuesRef = useRef<Partial<UserForm> | null>(null);
-  const [editForm] = Form.useForm<UserForm>();
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailRow, setDetailRow] = useState<
-    | (UserItem & {
-        deptNames?: string[];
-        avatarAttachId?: number;
-        online?: boolean;
-        loginSessions?: Array<{
-          device?: string;
-          ip?: string;
-          browser?: string;
-          loginTime?: string;
-        }>;
-      })
-    | null
-  >(null);
-  const [createAvatarPreviewUrl, setCreateAvatarPreviewUrl] = useState<string | undefined>();
-  const [editAvatarPreviewUrl, setEditAvatarPreviewUrl] = useState<string | undefined>();
   const { message } = App.useApp();
 
   /** 根据附件ID生成头像展示/预览地址（同源，走代理） */
@@ -113,99 +85,66 @@ const Users: React.FC = () => {
     }));
   };
 
-  // 加载编辑用户的部门信息
-  useEffect(() => {
-    const loadUserDepts = async () => {
-      if (editModalOpen && currentRow?.userId) {
-        try {
-          const res = await getUserDeptIds(currentRow.userId);
-          if (res.code === 0 && res.data) {
-            setEditDeptIds(res.data);
-            editForm.setFieldsValue({ deptIds: res.data });
-          }
-        } catch (e) {
-          console.error('加载用户部门失败', e);
-          setEditDeptIds([]);
-          editForm.setFieldsValue({ deptIds: [] });
-        }
-      } else {
-        setEditDeptIds([]);
-      }
-    };
-    loadUserDepts();
-  }, [editModalOpen, currentRow?.userId, editForm]);
-
-  // 打开编辑弹窗时回填基础字段（部门在另一个 effect 异步回填）
-  useEffect(() => {
-    if (editModalOpen && currentRow) {
-      const avatarAttachId =
-        currentRow.avatar?.attachId != null
-          ? String(currentRow.avatar.attachId)
-          : undefined;
-      const initialValues: Partial<UserForm> = {
-        userName: currentRow.userName,
-        account: currentRow.account ?? '',
-        gender: currentRow.gender,
-        phone: currentRow.phone,
-        email: currentRow.email,
-        avatarAttachId,
-        deptIds: editDeptIds ?? [],
-        roleIds:
-          currentRow.roles?.map((role) =>
-            role.roleId != null ? role.roleId.toString() : role.roleName,
-          ) ?? [],
-      };
-      editInitialValuesRef.current = initialValues;
-      editForm.setFieldsValue(initialValues as UserForm);
-      setEditAvatarPreviewUrl(getDisplayAvatarUrl(currentRow as any));
-      return;
-    }
-    editInitialValuesRef.current = null;
-    editForm.resetFields();
-    setEditAvatarPreviewUrl(undefined);
-  }, [editModalOpen, currentRow, editDeptIds, editForm]);
-
-  const handleSubmit = async (values: UserForm, isEdit: boolean) => {
-    const hide = message.loading(isEdit ? '正在保存用户信息' : '正在新增用户');
+  const handleCreateSubmit = async (values: UserForm) => {
+    const hide = message.loading('正在新增用户');
     try {
-      let userId: string | undefined;
-
-      if (isEdit && currentRow?.userId) {
-        await updateUser(currentRow.userId, values);
-        userId = currentRow.userId;
-      } else {
-        const res = await createUser(values);
-        if (res.code !== 0 || !res.data) {
-          throw new Error(res.msg || '新增用户失败');
-        }
-        // 后端返回的是 Long，这里统一转成字符串
-        userId = res.data.toString();
+      const res = await createUser(values);
+      if (res.code !== 0 || !res.data) {
+        throw new Error(res.msg || '新增用户失败');
       }
+      // 后端返回的是 Long，这里统一转成字符串
+      const userId = res.data.toString();
 
-      // 处理角色分配（新增和编辑统一走后端 /user/{userId}/roles 接口）
-      if (userId) {
-        const { roleIds } = values;
-        // 如果有选择角色就按选择的角色分配；如果没选且是编辑，则传空数组表示清空角色
-        if ((roleIds && roleIds.length > 0) || isEdit) {
-          const assignRes = await assignUserRoles(
-            userId,
-            (roleIds || []).map((id) => id?.toString?.() ?? id),
-          );
-          if (assignRes.code !== 0) {
-            throw new Error(assignRes.msg || '分配角色失败');
-          }
+      // 处理角色分配
+      const { roleIds } = values;
+      if (roleIds && roleIds.length > 0) {
+        const assignRes = await assignUserRoles(
+          userId,
+          roleIds.map((id) => id?.toString?.() ?? id),
+        );
+        if (assignRes.code !== 0) {
+          throw new Error(assignRes.msg || '分配角色失败');
         }
       }
       hide();
-      message.success(isEdit ? '保存成功' : '新增成功');
+      message.success('新增成功');
       setCreateModalOpen(false);
-      setEditModalOpen(false);
-      setCurrentRow(undefined);
       actionRef.current?.reload();
       return true;
     } catch (e) {
       hide();
-      message.error(isEdit ? '保存失败，请稍后重试' : '新增失败，请稍后重试');
+      message.error('新增失败，请稍后重试');
+      return false;
+    }
+  };
+
+  const handleUpdateSubmit = async (values: UserForm) => {
+    if (!currentId) {
+      message.error('用户ID不存在');
+      return false;
+    }
+    const hide = message.loading('正在保存用户信息');
+    try {
+      await updateUser(currentId, values);
+
+      // 处理角色分配（如果有选择角色就按选择的角色分配；如果没选则传空数组表示清空角色）
+      const { roleIds } = values;
+      const assignRes = await assignUserRoles(
+        currentId,
+        (roleIds || []).map((id) => id?.toString?.() ?? id),
+      );
+      if (assignRes.code !== 0) {
+        throw new Error(assignRes.msg || '分配角色失败');
+      }
+      hide();
+      message.success('保存成功');
+      setEditModalOpen(false);
+      setCurrentId(undefined);
+      actionRef.current?.reload();
+      return true;
+    } catch (e) {
+      hide();
+      message.error('保存失败，请稍后重试');
       return false;
     }
   };
@@ -286,7 +225,7 @@ const Users: React.FC = () => {
         message.error(res.msg || '重置密码失败，请稍后重试');
         return;
       }
-      message.success('密码已重置为 123456');
+      message.success('密码已重置');
       actionRef.current?.reload();
     } catch (e) {
       hide();
@@ -294,26 +233,14 @@ const Users: React.FC = () => {
     }
   };
 
-  const handleShowDetail = async (row: UserItem) => {
+  const handleShowDetail = async (userId: string) => {
+    setCurrentId(userId);
     setDetailModalOpen(true);
-    setDetailLoading(true);
-    try {
-      const res = await getUserDetail(row.userId);
-      if (res.code === 0 && res.data) {
-        const { deptIds, deptNames, ...rest } = res.data as any;
-        setDetailRow({
-          ...(row as any),
-          ...rest,
-          deptNames,
-        });
-      } else {
-        message.error(res.msg || '加载用户详情失败');
-      }
-    } catch (e) {
-      message.error('加载用户详情失败，请稍后重试');
-    } finally {
-      setDetailLoading(false);
-    }
+  };
+
+  const handleShowEdit = async (userId: string) => {
+    setCurrentId(userId);
+    setEditModalOpen(true);
   };
 
   const handleAvatarUpload = async (
@@ -529,18 +456,13 @@ const Users: React.FC = () => {
         return [
           <a
             key="detail"
-            onClick={() => {
-              void handleShowDetail(record);
-            }}
+            onClick={() => handleShowDetail(record.userId) }
           >
             详情
           </a>,
           <a
             key="edit"
-            onClick={() => {
-              setCurrentRow(record);
-              setEditModalOpen(true);
-            }}
+            onClick={() => handleShowEdit(record.userId) }
           >
             编辑
           </a>,
@@ -571,7 +493,7 @@ const Users: React.FC = () => {
             key="add"
             type="primary"
             onClick={() => {
-              setCurrentRow(undefined);
+              setCurrentId(undefined);
               setCreateModalOpen(true);
             }}
           >
@@ -610,195 +532,43 @@ const Users: React.FC = () => {
         }}
       />
 
-      <UserDetailModal
-        userId={detailRow?.userId}
-        open={detailModalOpen}
-        onClose={() => {
-          setDetailModalOpen(false);
-          setDetailRow(null);
+      <UserCreateModal
+        open={createModalOpen}
+        onCancel={() => {
+          setCreateModalOpen(false);
         }}
+        handleSubmit={handleCreateSubmit}
+        handleAvatarUpload={handleAvatarUpload}
+        deptTree={convertDeptTreeToOptions(deptTree)}
       />
 
-      <ModalForm<UserForm>
-        title="新建用户"
-        open={createModalOpen}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => {
-            setCreateModalOpen(false);
-            setCreateAvatarPreviewUrl(undefined);
-            createForm.resetFields();
-          },
-        }}
-        form={createForm}
-        onFinish={async (values) => {
-          return handleSubmit(values, false);
-        }}
-      >
-        <Form.Item name="avatarAttachId" hidden>
-          <input type="hidden" />
-        </Form.Item>
-        <Form.Item label="头像">
-          <Upload
-            showUploadList={false}
-            beforeUpload={(file) =>
-              handleAvatarUpload(file as any, createForm, setCreateAvatarPreviewUrl)
-            }
-          >
-            <Avatar
-              src={createAvatarPreviewUrl}
-              size={64}
-              icon={<UserOutlined />}
-            />
-          </Upload>
-        </Form.Item>
-        <ProFormText
-          name="userName"
-          label="用户姓名"
-          rules={[{ required: true, message: '请输入用户姓名' }]}
-        />
-        <ProFormText
-          name="account"
-          label="账号"
-          rules={[{ required: true, message: '请输入账号' }]}
-        />
-        <ProFormSelect
-          name="gender"
-          label="性别"
-          valueEnum={{
-            男: '男',
-            女: '女',
-          }}
-        />
-        <ProFormText name="phone" label="手机号码" />
-        <ProFormText name="email" label="电子邮箱" />
-        <ProFormTreeSelect
-          name="deptIds"
-          label="部门"
-          placeholder="请选择部门"
-          fieldProps={{
-            multiple: true,
-            treeData: convertDeptTreeToOptions(deptTree),
-            treeCheckable: true,
-            showCheckedStrategy: 'SHOW_ALL',
-            allowClear: true,
-          }}
-        />
-        <ProFormSelect
-          name="roleIds"
-          label="角色"
-          placeholder="请选择角色"
-          fieldProps={{
-            mode: 'multiple',
-          }}
-          request={async () => {
-            try {
-              const res = await pageRoles({ pageNum: 1, pageSize: 100 });
-              if (res.code !== 0 || !res.data) {
-                return [];
-              }
-              return res.data.list.map((role) => ({
-                label: role.roleName,
-                value: role.roleId != null ? role.roleId.toString() : role.roleName,
-              }));
-            } catch {
-              return [];
-            }
-          }}
-        />
-      </ModalForm>
+      {
+        currentId && (
+          <UserDetailModal
+            userId={currentId}
+            open={detailModalOpen}
+            onClose={() => {
+              setDetailModalOpen(false);
+            }}
+          />
+        )
+      }
 
-      <ModalForm<UserForm>
-        title="编辑用户"
-        open={editModalOpen}
-        form={editForm}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => {
-            setEditModalOpen(false);
-            setCurrentRow(undefined);
-            setEditDeptIds([]);
-            editInitialValuesRef.current = null;
-            editForm.resetFields();
-            setEditAvatarPreviewUrl(undefined);
-          },
-        }}
-        onFinish={async (values) => {
-          return handleSubmit(values, true);
-        }}
-      >
-        <Form.Item name="avatarAttachId" hidden>
-          <input type="hidden" />
-        </Form.Item>
-        <Form.Item label="头像">
-          <Upload
-            showUploadList={false}
-            beforeUpload={(file) =>
-              handleAvatarUpload(file as any, editForm, setEditAvatarPreviewUrl)
-            }
-          >
-            <Avatar
-              src={editAvatarPreviewUrl}
-              size={64}
-              icon={<UserOutlined />}
-            />
-          </Upload>
-        </Form.Item>
-        <ProFormText
-          name="userName"
-          label="用户姓名"
-          rules={[{ required: true, message: '请输入用户姓名' }]}
-        />
-        <ProFormText
-          name="account"
-          label="账号"
-          rules={[{ required: true, message: '请输入账号' }]}
-        />
-        <ProFormSelect
-          name="gender"
-          label="性别"
-          valueEnum={{
-            男: '男',
-            女: '女',
-          }}
-        />
-        <ProFormText name="phone" label="手机号码" />
-        <ProFormText name="email" label="电子邮箱" />
-        <ProFormTreeSelect
-          name="deptIds"
-          label="部门"
-          placeholder="请选择部门"
-          fieldProps={{
-            multiple: true,
-            treeData: convertDeptTreeToOptions(deptTree),
-            treeCheckable: true,
-            showCheckedStrategy: 'SHOW_ALL',
-            allowClear: true,
-          }}
-        />
-        <ProFormSelect
-          name="roleIds"
-          label="角色"
-          placeholder="请选择角色"
-          fieldProps={{
-            mode: 'multiple',
-          }}
-          request={async () => {
-            try {
-              const res = await pageRoles({ pageNum: 1, pageSize: 100 });
-              if (res.code !== 0 || !res.data) {
-                return [];
-              }
-              return res.data.list.map((role) => ({
-                label: role.roleName,
-                value: role.roleId != null ? role.roleId.toString() : role.roleName,
-              }));
-            } catch {
-              return [];
-            }
-          }}
-        />
-      </ModalForm>
+      {
+        currentId && (
+          <UserEditModal
+            userId={currentId}
+            open={editModalOpen}
+            onCancel={() => {
+              setEditModalOpen(false);
+            }}
+            handleSubmit={handleUpdateSubmit}
+            handleAvatarUpload={handleAvatarUpload}
+            deptTree={convertDeptTreeToOptions(deptTree)}
+          />
+        )
+      }
+      
     </PageContainer>
   );
 };

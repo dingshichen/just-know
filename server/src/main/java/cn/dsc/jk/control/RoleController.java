@@ -1,7 +1,6 @@
 package cn.dsc.jk.control;
 
 import cn.dsc.jk.common.Result;
-import cn.dsc.jk.common.ResultCode;
 import cn.dsc.jk.dto.role.RoleCreate;
 import cn.dsc.jk.dto.role.RoleDetail;
 import cn.dsc.jk.dto.role.RoleItem;
@@ -97,5 +96,16 @@ public class RoleController {
     public Result<PageInfo<RoleItem>> page(RolePageQuery query) {
         PageInfo<RoleItem> pageInfo = roleService.page(query);
         return Result.success(pageInfo);
+    }
+
+    /**
+     * 查询所有角色列表
+     *
+     * @return 角色列表
+     */
+    @GetMapping("/list")
+    public Result<List<RoleItem>> listAll() {
+        List<RoleItem> list = roleService.listAll();
+        return Result.success(list);
     }
 }

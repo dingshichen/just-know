@@ -22,6 +22,6 @@ public interface RoleMapper extends BaseMapper<RoleEntity> {
      * @param roleCode 角色编码（可选）
      * @return 角色列表
      */
-    List<RoleEntity> selectList(@Param("roleName") String roleName,
-                                @Param("roleCode") String roleCode);
+    List<RoleEntity> selectByQuery(@Param("roleName") String roleName,
+                                   @Param("roleCode") String roleCode);
 }

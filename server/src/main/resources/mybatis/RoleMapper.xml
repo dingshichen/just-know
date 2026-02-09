@@ -28,7 +28,7 @@
     </sql>
 
     <!-- Select list with conditions -->
-    <select id="selectList" resultMap="baseResultMap">
+    <select id="selectByQuery" resultMap="baseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM role

@@ -81,11 +81,16 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> impleme
     @Override
     public PageInfo<RoleItem> page(RolePageQuery query) {
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<RoleEntity> entities = this.baseMapper.selectList(
+        List<RoleEntity> entities = this.baseMapper.selectByQuery(
                 query.getRoleName(),
                 query.getRoleCode()
         );
         return new PageInfo<>(entities.stream().map(RoleConvert.FU_TO_ITEM).toList());
+    }
+
+    @Override
+    public List<RoleItem> listAll() {
+        return this.list().stream().map(RoleConvert.FU_TO_ITEM).toList();
     }
 
 

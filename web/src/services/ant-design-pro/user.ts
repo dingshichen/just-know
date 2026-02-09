@@ -1,11 +1,14 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
-import type { DeptItem } from './dept';
-import type { RoleItem } from './role';
+import type { DeptOption } from './dept';
+import type { RoleOption } from './role';
 import type { AttachOption } from './attach';
 
 
+/**
+ * 用户选项
+ */
 export class UserOption {
   userId: string;
   userName: string;
@@ -15,6 +18,10 @@ export class UserOption {
   }
 }
 
+/**
+ * 用户列表项
+ * 对应后端的 UserItem DTO
+ */
 export class UserItem extends UserOption {
   account?: string;
   gender?: string;
@@ -22,12 +29,15 @@ export class UserItem extends UserOption {
   email?: string;
   lockedFlag?: boolean;
   avatar?: AttachOption;
-  roles?: RoleItem[];
-  depts?: DeptItem[];
+  roles?: RoleOption[];
+  depts?: DeptOption[];
   createdTime?: string;
   updatedTime?: string;
 }
 
+/**
+ * 登录会话信息
+ */
 export class LoginSessionInfo {
   device?: string;
   ip?: string;
@@ -36,12 +46,15 @@ export class LoginSessionInfo {
   token?: string;
 }
 
+/**
+ * 用户详情
+ * 对应后端的 UserDetail DTO
+ */
 export class UserDetail extends UserItem {
   loginSessions?: LoginSessionInfo[];
   createdUser?: UserOption;
   updatedUser?: UserOption;
 }
-
 
 /**
  * 用户分页查询参数

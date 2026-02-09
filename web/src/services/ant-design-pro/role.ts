@@ -3,17 +3,27 @@
 import { request } from '@umijs/max';
 
 /**
+ * 角色选项
+ */
+export class RoleOption {
+  roleId: string;
+  roleName: string;
+  constructor(roleId: string, roleName: string) {
+    this.roleId = roleId;
+    this.roleName = roleName;
+  }
+}
+
+/**
  * 角色列表项
  * 对应后端的 RoleItem DTO
  */
-export type RoleItem = {
-  roleId: number;
-  roleName: string;
+export class RoleItem extends RoleOption {
   roleCode?: string;
   roleDesc?: string;
   createdTime?: string;
   updatedTime?: string;
-};
+}
 
 /**
  * 角色分页查询参数
@@ -50,6 +60,16 @@ export async function pageRoles(params: RolePageParams) {
   return request<Result<PageInfo<RoleItem>>>('/api/role/page', {
     method: 'GET',
     params,
+  });
+}
+
+/**
+ * 查询所有角色
+ * GET /api/role/list
+ */
+export async function listAllRoles() {
+  return request<Result<RoleItem[]>>('/api/role/list', {
+    method: 'GET',
   });
 }
 

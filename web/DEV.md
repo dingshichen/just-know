@@ -4,7 +4,7 @@
 
 ### 开发模式
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ### 演示模式

@@ -82,4 +82,11 @@ public interface RoleService extends IService<RoleEntity> {
      * @return 分页结果
      */
     PageInfo<RoleItem> page(RolePageQuery query);
+
+    /**
+     * 查询所有角色列表
+     *
+     * @return 角色列表
+     */
+    List<RoleItem> listAll();
 }
