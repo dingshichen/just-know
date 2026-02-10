@@ -51,7 +51,7 @@ const Users: React.FC = () => {
   const { message } = App.useApp();
 
   /** 根据附件ID生成头像展示/预览地址（同源，走代理） */
-  const getAvatarUrl = (attachId: string) => `/api/attach/download/${attachId}`;
+  const getAvatarUrl = (attachId: string) => `/api/attach/download/${attachId}?token=${localStorage.getItem('jk-token')}`;
 
   /** 从用户项（含 avatar: AttachOption）或详情中解析出头像展示 URL */
   const getDisplayAvatarUrl = (row: { avatar?: { attachId?: string } } | null) => {
@@ -83,70 +83,6 @@ const Users: React.FC = () => {
       key: item.deptId,
       children: item.children ? convertDeptTreeToOptions(item.children) : undefined,
     }));
-  };
-
-  const handleCreateSubmit = async (values: UserForm) => {
-    const hide = message.loading('正在新增用户');
-    try {
-      const res = await createUser(values);
-      if (res.code !== 0 || !res.data) {
-        throw new Error(res.msg || '新增用户失败');
-      }
-      // 后端返回的是 Long，这里统一转成字符串
-      const userId = res.data.toString();
-
-      // 处理角色分配
-      const { roleIds } = values;
-      if (roleIds && roleIds.length > 0) {
-        const assignRes = await assignUserRoles(
-          userId,
-          roleIds.map((id) => id?.toString?.() ?? id),
-        );
-        if (assignRes.code !== 0) {
-          throw new Error(assignRes.msg || '分配角色失败');
-        }
-      }
-      hide();
-      message.success('新增成功');
-      setCreateModalOpen(false);
-      actionRef.current?.reload();
-      return true;
-    } catch (e) {
-      hide();
-      message.error('新增失败，请稍后重试');
-      return false;
-    }
-  };
-
-  const handleUpdateSubmit = async (values: UserForm) => {
-    if (!currentId) {
-      message.error('用户ID不存在');
-      return false;
-    }
-    const hide = message.loading('正在保存用户信息');
-    try {
-      await updateUser(currentId, values);
-
-      // 处理角色分配（如果有选择角色就按选择的角色分配；如果没选则传空数组表示清空角色）
-      const { roleIds } = values;
-      const assignRes = await assignUserRoles(
-        currentId,
-        (roleIds || []).map((id) => id?.toString?.() ?? id),
-      );
-      if (assignRes.code !== 0) {
-        throw new Error(assignRes.msg || '分配角色失败');
-      }
-      hide();
-      message.success('保存成功');
-      setEditModalOpen(false);
-      setCurrentId(undefined);
-      actionRef.current?.reload();
-      return true;
-    } catch (e) {
-      hide();
-      message.error('保存失败，请稍后重试');
-      return false;
-    }
   };
 
   const handleDelete = async (row: UserItem) => {
@@ -241,34 +177,6 @@ const Users: React.FC = () => {
   const handleShowEdit = async (userId: string) => {
     setCurrentId(userId);
     setEditModalOpen(true);
-  };
-
-  const handleAvatarUpload = async (
-    file: File,
-    form: any,
-    setPreview: (url: string | undefined) => void,
-  ) => {
-    try {
-      const res = await uploadAttach(file);
-      if (res.code !== 0 || !res.data) {
-        message.error(res.msg || '上传头像失败，请稍后重试');
-        return false;
-      }
-      const attach = res.data;
-      const attachId = attach.attachId?.toString?.() ?? attach.attachId;
-      // 保存附件ID到表单（隐藏项会随表单提交）
-      form.setFieldsValue({
-        avatarAttachId: attachId,
-      } as any);
-      // 使用同源下载地址作为预览，确保能正确展示
-      const url = getAvatarUrl(attach.attachId);
-      setPreview(url);
-      message.success('头像上传成功');
-      return false; // 阻止 Upload 组件自动上传
-    } catch (e) {
-      message.error('上传头像失败，请稍后重试');
-      return false;
-    }
   };
 
   const columns: ProColumns<UserItem>[] = [
@@ -537,8 +445,10 @@ const Users: React.FC = () => {
         onCancel={() => {
           setCreateModalOpen(false);
         }}
-        handleSubmit={handleCreateSubmit}
-        handleAvatarUpload={handleAvatarUpload}
+        onSubmit={() => {
+          setCreateModalOpen(false);
+          actionRef.current?.reload();
+        }}
         deptTree={convertDeptTreeToOptions(deptTree)}
       />
 
@@ -561,9 +471,13 @@ const Users: React.FC = () => {
             open={editModalOpen}
             onCancel={() => {
               setEditModalOpen(false);
+              setCurrentId(undefined);
             }}
-            handleSubmit={handleUpdateSubmit}
-            handleAvatarUpload={handleAvatarUpload}
+            onSubmit={() => {
+              setEditModalOpen(false);
+              setCurrentId(undefined);
+              actionRef.current?.reload();
+            }}
             deptTree={convertDeptTreeToOptions(deptTree)}
           />
         )

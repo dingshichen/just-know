@@ -46,4 +46,9 @@ public class UserCreate {
      * 部门ID列表
      */
     private List<Long> deptIds;
+
+    /**
+     * 角色ID列表
+     */
+    private List<Long> roleIds;
 }

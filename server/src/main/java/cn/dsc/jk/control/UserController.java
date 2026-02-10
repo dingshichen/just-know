@@ -1,7 +1,6 @@
 package cn.dsc.jk.control;
 
 import cn.dsc.jk.common.Result;
-import cn.dsc.jk.common.ResultCode;
 import cn.dsc.jk.config.ops.OpsLog;
 import cn.dsc.jk.dto.user.UserCreate;
 import cn.dsc.jk.dto.user.UserDetail;

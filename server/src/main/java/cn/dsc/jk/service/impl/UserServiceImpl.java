@@ -132,6 +132,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             userDeptRelService.saveBatch(userDepts);
         }
 
+        // 处理角色关联
+        if (CollUtil.isNotEmpty(create.getRoleIds())) {
+            List<UserRoleRelEntity> userRoles = create.getRoleIds().stream().map(roleId -> {
+                UserRoleRelEntity userRole = new UserRoleRelEntity();
+                userRole.setUserId(entity.getUserId());
+                userRole.setRoleId(roleId);
+                return userRole;
+            }).collect(Collectors.toList());
+            userRoleRelService.saveBatch(userRoles);
+        }
+
         return entity.getUserId();
     }
 
@@ -158,6 +169,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 return userDept;
             }).collect(Collectors.toList());
             userDeptRelService.saveBatch(userDepts);
+        }
+
+        // 处理角色关联：入参包含 roleIds 时先删除原有关系，再插入新关系
+        if (update.getRoleIds() != null) {
+            userRoleRelService.deleteByUserId(userId);
+            if (CollUtil.isNotEmpty(update.getRoleIds())) {
+                List<UserRoleRelEntity> userRoles = update.getRoleIds().stream().map(roleId -> {
+                    UserRoleRelEntity userRole = new UserRoleRelEntity();
+                    userRole.setUserId(userId);
+                    userRole.setRoleId(roleId);
+                    return userRole;
+                }).collect(Collectors.toList());
+                userRoleRelService.saveBatch(userRoles);
+            }
         }
 
         // 清除用户会话，强制重新登录

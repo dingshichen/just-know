@@ -24,7 +24,7 @@ import {
 } from '@/services/role';
 
 const Roles: React.FC = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<RoleItem | undefined>();

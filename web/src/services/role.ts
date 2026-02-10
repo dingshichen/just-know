@@ -98,7 +98,7 @@ export async function createRole(body: RoleForm) {
  * 修改角色
  * PUT /api/role/{roleId}
  */
-export async function updateRole(roleId: number, body: RoleForm) {
+export async function updateRole(roleId: string, body: RoleForm) {
   return request<Result<void>>(`/api/role/${roleId}`, {
     method: 'PUT',
     data: body,
@@ -109,7 +109,7 @@ export async function updateRole(roleId: number, body: RoleForm) {
  * 删除角色
  * DELETE /api/role/{roleId}
  */
-export async function deleteRole(roleId: number) {
+export async function deleteRole(roleId: string) {
   return request<Result<void>>(`/api/role/${roleId}`, {
     method: 'DELETE',
   });
@@ -119,7 +119,7 @@ export async function deleteRole(roleId: number) {
  * 获取角色详情
  * GET /api/role/{roleId}
  */
-export async function getRoleDetail(roleId: number) {
+export async function getRoleDetail(roleId: string) {
   return request<Result<RoleItem>>(`/api/role/${roleId}`, {
     method: 'GET',
   });
@@ -129,7 +129,7 @@ export async function getRoleDetail(roleId: number) {
  * 批量删除角色
  * DELETE /api/role/batch?roleIds=1&roleIds=2
  */
-export async function batchDeleteRoles(roleIds: number[]) {
+export async function batchDeleteRoles(roleIds: string[]) {
   return request<Result<void>>('/api/role/batch', {
     method: 'DELETE',
     params: {

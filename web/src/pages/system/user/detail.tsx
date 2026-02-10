@@ -39,7 +39,7 @@ const UserDetailModal: React.FC<UserDetailProps> = ({ userId, open, onClose }) =
           <Descriptions.Item label="头像">
             {data?.avatar?.attachId ? (
               <Avatar
-                src={`/api/attach/download/${data?.avatar?.attachId}`}
+                src={`/api/attach/download/${data?.avatar?.attachId}?token=${localStorage.getItem('jk-token')}`}
                 size={64}
                 icon={<UserOutlined />}
               />
