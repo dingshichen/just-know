@@ -15,7 +15,7 @@ import {
 } from 'antd';
 import type { MenuProps } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   assignUserRoles,
   type UserForm,
@@ -33,9 +33,9 @@ import {
   unlockUser,
   updateUser,
 } from '@/services/user';
-import { listDeptTree, type DeptItem } from '@/services/dept';
 import { uploadAttach } from '@/services/attach';
-import { pageRoles } from '@/services/role';
+import { requestDeptTreeOptions } from '@/components/DeptTreeSelect';
+import { requestRoleOptions } from '@/components/RoleSelect';
 import UserDetailModal from './detail';
 import UserCreateModal from './create';
 import UserEditModal from './edit';
@@ -46,7 +46,6 @@ const Users: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentId, setCurrentId] = useState<string | undefined>();
   const [selectedRows, setSelectedRows] = useState<UserItem[]>([]);
-  const [deptTree, setDeptTree] = useState<DeptItem[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const { message } = App.useApp();
 
@@ -58,31 +57,6 @@ const Users: React.FC = () => {
     if (!row) return undefined;
     if (row.avatar?.attachId != null) return getAvatarUrl(row.avatar.attachId);
     return undefined;
-  };
-
-  // 加载部门树形数据
-  useEffect(() => {
-    const loadDeptTree = async () => {
-      try {
-        const res = await listDeptTree();
-        if (res.code === 0 && res.data) {
-          setDeptTree(res.data);
-        }
-      } catch (e) {
-        console.error('加载部门树失败', e);
-      }
-    };
-    loadDeptTree();
-  }, []);
-
-  // 将部门树转换为TreeSelect需要的格式
-  const convertDeptTreeToOptions = (tree: DeptItem[]): any[] => {
-    return tree.map((item) => ({
-      title: item.deptName,
-      value: item.deptId,
-      key: item.deptId,
-      children: item.children ? convertDeptTreeToOptions(item.children) : undefined,
-    }));
   };
 
   const handleDelete = async (row: UserItem) => {
@@ -223,28 +197,17 @@ const Users: React.FC = () => {
         mode: 'multiple',
         placeholder: '请选择角色',
       },
-      request: async () => {
-        try {
-          const res = await pageRoles({ pageNum: 1, pageSize: 100 });
-          if (res.code !== 0 || !res.data) return [];
-          return res.data.list.map((role) => ({
-            label: role.roleName,
-            value: role.roleId != null ? role.roleId.toString() : role.roleName,
-          }));
-        } catch {
-          return [];
-        }
-      },
+      request: requestRoleOptions,
     },
     {
       title: '部门',
       dataIndex: 'deptIds',
       valueType: 'treeSelect',
       hideInTable: true,
+      request: requestDeptTreeOptions,
       fieldProps: {
         multiple: true,
         placeholder: '请选择部门',
-        treeData: convertDeptTreeToOptions(deptTree),
         treeCheckable: true,
         showCheckedStrategy: 'SHOW_ALL',
         allowClear: true,
@@ -449,7 +412,6 @@ const Users: React.FC = () => {
           setCreateModalOpen(false);
           actionRef.current?.reload();
         }}
-        deptTree={convertDeptTreeToOptions(deptTree)}
       />
 
       {
@@ -478,7 +440,6 @@ const Users: React.FC = () => {
               setCurrentId(undefined);
               actionRef.current?.reload();
             }}
-            deptTree={convertDeptTreeToOptions(deptTree)}
           />
         )
       }

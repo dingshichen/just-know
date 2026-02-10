@@ -1,22 +1,21 @@
-import { ModalForm, ProFormSelect, ProFormText, ProFormTreeSelect } from "@ant-design/pro-components";
+import { ModalForm, ProFormSelect, ProFormText } from "@ant-design/pro-components";
 import { createUser, UserForm } from "@/services/user";
 import { App, Button, Form, Upload } from "antd";
 import { Avatar } from "antd";
 import { UploadOutlined, UserOutlined } from "@ant-design/icons";
-import { listAllRoles, RoleItem } from "@/services/role";
 import { useState } from "react";
-import { DataNode } from "antd/es/tree";
 import ImgCrop from "antd-img-crop";
 import { uploadAttach } from "@/services/attach";
+import DeptTreeSelect from "@/components/DeptTreeSelect";
+import RoleSelect from "@/components/RoleSelect";
 
 export type UserCreateModalProps = {
     open: boolean;
     onCancel: () => void;
     onSubmit: () => void;
-    deptTree: DataNode[];
 };
 
-const UserCreateModal: React.FC<UserCreateModalProps> = ({ open, onCancel, onSubmit, deptTree }) => {
+const UserCreateModal: React.FC<UserCreateModalProps> = ({ open, onCancel, onSubmit }) => {
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
     const [createForm] = Form.useForm<UserForm>();
     const { message } = App.useApp();
@@ -111,40 +110,8 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ open, onCancel, onSub
         />
         <ProFormText name="phone" label="手机号码" />
         <ProFormText name="email" label="电子邮箱" />
-        <ProFormTreeSelect
-          name="deptIds"
-          label="部门"
-          placeholder="请选择部门"
-          fieldProps={{
-            multiple: true,
-            treeData: deptTree,
-            treeCheckable: true,
-            showCheckedStrategy: 'SHOW_ALL',
-            allowClear: true,
-          }}
-        />
-        <ProFormSelect
-          name="roleIds"
-          label="角色"
-          placeholder="请选择角色"
-          fieldProps={{
-            mode: 'multiple',
-          }}
-          request={async () => {
-            try {
-              const res = await listAllRoles();
-              if (res.code !== 0) {
-                return [];
-              }
-              return res.data.map((role: RoleItem) => ({
-                label: role.roleName,
-                value: role.roleId,
-              }));
-            } catch {
-              return [];
-            }
-          }}
-        />
+        <DeptTreeSelect />
+        <RoleSelect />
       </ModalForm>
 
     );
