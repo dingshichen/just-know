@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cn.dsc.jk.common.Result;
 import cn.dsc.jk.common.ResultCode;
+import cn.dsc.jk.service.SystemConfigService;
 import cn.dsc.jk.service.UserCredentialService;
 import lombok.RequiredArgsConstructor;
 
@@ -37,12 +37,13 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfiguration {
 
     private final ObjectMapper objectMapper;
+    private final SystemConfigService systemConfigService;
     private final UserCredentialService userCredentialService;
     private final SessionAuthenticationTokenFilter sessionAuthenticationTokenFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        return new ConfigurablePasswordEncoder(systemConfigService);
     }
 
     @Bean

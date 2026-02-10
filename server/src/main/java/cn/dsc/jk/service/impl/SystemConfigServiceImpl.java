@@ -42,10 +42,14 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     private final Map<String, String> configCache = new ConcurrentHashMap<>();
 
     /**
-     * 合法的密码器列表
+     * 合法的密码器列表（与 Spring Security PasswordEncoderFactories 一致）
      */
     private static final Set<String> VALID_PASSWORD_ENCODERS = Set.of(
-            "bcrypt", "pbkdf2", "scrypt", "argon2", "noop"
+            "bcrypt", "ldap", "MD4", "MD5", "noop",
+            "pbkdf2", "pbkdf2@SpringSecurity_v5_8",
+            "scrypt", "scrypt@SpringSecurity_v5_8",
+            "SHA-1", "SHA-256", "sha256",
+            "argon2", "argon2@SpringSecurity_v5_8"
     );
 
     /**
@@ -107,7 +111,7 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
                 }
                 return null;
             case PASSWORD_ENCODER:
-                if (!VALID_PASSWORD_ENCODERS.contains(value.toLowerCase())) {
+                if (!VALID_PASSWORD_ENCODERS.contains(value)) {
                     return String.format("- [%s] %s: 值必须为 %s 之一，当前值: %s",
                             key.getKey(), key.getConfigName(), VALID_PASSWORD_ENCODERS, value);
                 }

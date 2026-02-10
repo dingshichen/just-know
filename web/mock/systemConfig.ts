@@ -35,7 +35,7 @@ let mockSystemConfigs: any[] = [
     configName: '密码器',
     configKey: 'security.password_encoder',
     configValue: 'bcrypt',
-    configDesc: '可选：bcrypt、pbkdf2、scrypt、argon2、noop（与 Spring Security DelegatingPasswordEncoder 一致）',
+    configDesc: '可选：bcrypt、ldap、MD4、MD5、noop、pbkdf2、pbkdf2@SpringSecurity_v5_8、scrypt、scrypt@SpringSecurity_v5_8、SHA-1、SHA-256、sha256、argon2、argon2@SpringSecurity_v5_8（与 Spring Security DelegatingPasswordEncoder 一致）',
     createdTime: '2024-01-01 10:00:00',
     updatedTime: '2024-01-01 10:00:00',
   },

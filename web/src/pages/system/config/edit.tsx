@@ -29,11 +29,20 @@ const BOOLEAN_OPTIONS = [
 ];
 
 const PASSWORD_ENCODER_OPTIONS = [
-  { label: 'bcrypt', value: 'bcrypt' },
+  { label: 'bcrypt（默认推荐）', value: 'bcrypt' },
+  { label: 'ldap', value: 'ldap' },
+  { label: 'MD4', value: 'MD4' },
+  { label: 'MD5', value: 'MD5' },
+  { label: 'noop（明文，仅测试用）', value: 'noop' },
   { label: 'pbkdf2', value: 'pbkdf2' },
+  { label: 'pbkdf2@SpringSecurity_v5_8', value: 'pbkdf2@SpringSecurity_v5_8' },
   { label: 'scrypt', value: 'scrypt' },
+  { label: 'scrypt@SpringSecurity_v5_8', value: 'scrypt@SpringSecurity_v5_8' },
+  { label: 'SHA-1', value: 'SHA-1' },
+  { label: 'SHA-256', value: 'SHA-256' },
+  { label: 'sha256', value: 'sha256' },
   { label: 'argon2', value: 'argon2' },
-  { label: 'noop', value: 'noop' },
+  { label: 'argon2@SpringSecurity_v5_8', value: 'argon2@SpringSecurity_v5_8' },
 ];
 
 export type ConfigEditModalProps = {

@@ -26,7 +26,7 @@ public enum SystemConfigKey {
     PASSWORD_ENCODER(
             "security.password_encoder",
             "密码器",
-            "可选：bcrypt、pbkdf2、scrypt、argon2、noop（与 Spring Security DelegatingPasswordEncoder 一致）"),
+            "支持多种密码器，包含 Spring Security 所有密码器"),
 
     /** 用户登录过期时间（小时） */
     USER_LOGIN_EXPIRE_HOURS(
