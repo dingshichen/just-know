@@ -1,37 +1,32 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  ModalForm,
   PageContainer,
-  ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Descriptions, Modal, message, Popconfirm } from 'antd';
+import { Button, message, Popconfirm } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import type {
-  PermissionForm,
   PermissionItem,
   PermissionPageParams,
 } from '@/services/permission';
 import {
   batchDeletePermissions,
-  createPermission,
   deletePermission,
-  getPermissionDetail,
   pagePermissions,
-  updatePermission,
 } from '@/services/permission';
 import { listSystemConfigs } from '@/services/systemConfig';
+import PermissionDetailModal from './detail';
+import PermissionCreateModal from './create';
+import PermissionEditModal from './edit';
 
 const Permissions: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [currentRow, setCurrentRow] = useState<PermissionItem | undefined>();
+  const [currentId, setCurrentId] = useState<string | undefined>();
   const [selectedRows, setSelectedRows] = useState<PermissionItem[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailRow, setDetailRow] = useState<PermissionItem | undefined>();
   const [allowOnlineOperation, setAllowOnlineOperation] = useState(true);
 
   // 获取系统配置：是否允许线上操作权限定义
@@ -55,31 +50,6 @@ const Permissions: React.FC = () => {
     };
     void fetchConfig();
   }, []);
-
-  const handleSubmit = async (values: PermissionForm, isEdit: boolean) => {
-    const hide = message.loading(isEdit ? '正在保存权限信息' : '正在新增权限');
-    try {
-      if (isEdit && currentRow?.permissionId) {
-        await updatePermission(currentRow.permissionId, values);
-      } else {
-        const res = await createPermission(values);
-        if (res.code !== 0 || res.data == null) {
-          throw new Error(res.msg || '新增权限失败');
-        }
-      }
-      hide();
-      message.success(isEdit ? '保存成功' : '新增成功');
-      setCreateModalOpen(false);
-      setEditModalOpen(false);
-      setCurrentRow(undefined);
-      actionRef.current?.reload();
-      return true;
-    } catch (e) {
-      hide();
-      message.error(isEdit ? '保存失败，请稍后重试' : '新增失败，请稍后重试');
-      return false;
-    }
-  };
 
   const handleDelete = async (row: PermissionItem) => {
     const hide = message.loading('正在删除权限');
@@ -112,21 +82,14 @@ const Permissions: React.FC = () => {
     }
   };
 
-  const handleShowDetail = async (record: PermissionItem) => {
+  const handleShowDetail = (permissionId: string) => {
+    setCurrentId(permissionId);
     setDetailModalOpen(true);
-    setDetailLoading(true);
-    try {
-      const res = await getPermissionDetail(record.permissionId);
-      if (res.code === 0 && res.data) {
-        setDetailRow(res.data);
-      } else {
-        message.error(res.msg || '加载权限详情失败');
-      }
-    } catch (e) {
-      message.error('加载权限详情失败，请稍后重试');
-    } finally {
-      setDetailLoading(false);
-    }
+  };
+
+  const handleShowEdit = (permissionId: string) => {
+    setCurrentId(permissionId);
+    setEditModalOpen(true);
   };
 
   const columns: ProColumns<PermissionItem>[] = [
@@ -157,19 +120,14 @@ const Permissions: React.FC = () => {
       render: (_, record) => [
         <a
           key="detail"
-          onClick={() => {
-            void handleShowDetail(record);
-          }}
+          onClick={() => handleShowDetail(record.permissionId)}
         >
           详情
         </a>,
         allowOnlineOperation && (
           <a
             key="edit"
-            onClick={() => {
-              setCurrentRow(record);
-              setEditModalOpen(true);
-            }}
+            onClick={() => handleShowEdit(record.permissionId)}
           >
             编辑
           </a>
@@ -203,7 +161,7 @@ const Permissions: React.FC = () => {
               key="add"
               type="primary"
               onClick={() => {
-                setCurrentRow(undefined);
+                setCurrentId(undefined);
                 setCreateModalOpen(true);
               }}
             >
@@ -252,83 +210,42 @@ const Permissions: React.FC = () => {
         }}
       />
 
-      <Modal
-        title="权限详情"
-        open={detailModalOpen}
-        footer={null}
-        onCancel={() => {
-          setDetailModalOpen(false);
-          setDetailRow(undefined);
-        }}
-      >
-        <Descriptions column={1} bordered size="small" loading={detailLoading}>
-          <Descriptions.Item label="权限名称">
-            {detailRow?.permissionName || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="权限编码">
-            {detailRow?.permissionCode || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {detailRow?.createdTime || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="更新时间">
-            {detailRow?.updatedTime || '-'}
-          </Descriptions.Item>
-        </Descriptions>
-      </Modal>
-
-      <ModalForm<PermissionForm>
-        title="新建权限"
+      <PermissionCreateModal
         open={createModalOpen}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => setCreateModalOpen(false),
+        onCancel={() => {
+          setCreateModalOpen(false);
         }}
-        onFinish={async (values) => {
-          return handleSubmit(values, false);
+        onSubmit={() => {
+          setCreateModalOpen(false);
+          actionRef.current?.reload();
         }}
-      >
-        <ProFormText
-          name="permissionName"
-          label="权限名称"
-          rules={[{ required: true, message: '请输入权限名称' }]}
-        />
-        <ProFormText
-          name="permissionCode"
-          label="权限编码"
-          rules={[{ required: true, message: '请输入权限编码' }]}
-        />
-      </ModalForm>
+      />
 
-      <ModalForm<PermissionForm>
-        title="编辑权限"
-        open={editModalOpen}
-        initialValues={{
-          permissionName: currentRow?.permissionName,
-          permissionCode: currentRow?.permissionCode,
-        }}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => {
+      {currentId && (
+        <PermissionDetailModal
+          permissionId={currentId}
+          open={detailModalOpen}
+          onClose={() => {
+            setDetailModalOpen(false);
+          }}
+        />
+      )}
+
+      {currentId && (
+        <PermissionEditModal
+          permissionId={currentId}
+          open={editModalOpen}
+          onCancel={() => {
             setEditModalOpen(false);
-            setCurrentRow(undefined);
-          },
-        }}
-        onFinish={async (values) => {
-          return handleSubmit(values, true);
-        }}
-      >
-        <ProFormText
-          name="permissionName"
-          label="权限名称"
-          rules={[{ required: true, message: '请输入权限名称' }]}
+            setCurrentId(undefined);
+          }}
+          onSubmit={() => {
+            setEditModalOpen(false);
+            setCurrentId(undefined);
+            actionRef.current?.reload();
+          }}
         />
-        <ProFormText
-          name="permissionCode"
-          label="权限编码"
-          rules={[{ required: true, message: '请输入权限编码' }]}
-        />
-      </ModalForm>
+      )}
     </PageContainer>
   );
 };

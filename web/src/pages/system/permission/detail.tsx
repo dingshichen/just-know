@@ -1,56 +1,53 @@
 import { Descriptions, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { getRoleDetail, type RoleItem } from '@/services/role';
 import { App } from 'antd';
+import { getPermissionDetail, type PermissionItem } from '@/services/permission';
 
-export type RoleDetailModalProps = {
-  roleId: string;
+export type PermissionDetailModalProps = {
+  permissionId: string;
   open: boolean;
   onClose: () => void;
 };
 
-const RoleDetailModal: React.FC<RoleDetailModalProps> = ({ roleId, open, onClose }) => {
-  const [data, setData] = useState<RoleItem | null>(null);
+const PermissionDetailModal: React.FC<PermissionDetailModalProps> = ({ permissionId, open, onClose }) => {
+  const [data, setData] = useState<PermissionItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { message } = App.useApp();
 
   useEffect(() => {
     const loadDetail = async () => {
-      if (!roleId) return;
+      if (!permissionId) return;
       setLoading(true);
       try {
-        const res = await getRoleDetail(roleId);
+        const res = await getPermissionDetail(permissionId);
         if (res.code === 0 && res.data) {
           setData(res.data);
         } else {
-          message.error(res.msg || '加载角色详情失败');
+          message.error(res.msg || '加载权限详情失败');
         }
       } catch (e) {
-        message.error('加载角色详情失败，请稍后重试');
+        message.error('加载权限详情失败，请稍后重试');
       } finally {
         setLoading(false);
       }
     };
     loadDetail();
-  }, [roleId]);
+  }, [permissionId]);
 
   return (
     <Modal
-      title="角色详情"
+      title="权限详情"
       open={open}
       footer={null}
       confirmLoading={loading}
       onCancel={onClose}
     >
       <Descriptions column={1} bordered size="small">
-        <Descriptions.Item label="角色名称">
-          {data?.roleName || '-'}
+        <Descriptions.Item label="权限名称">
+          {data?.permissionName || '-'}
         </Descriptions.Item>
-        <Descriptions.Item label="角色编码">
-          {data?.roleCode || '-'}
-        </Descriptions.Item>
-        <Descriptions.Item label="角色描述">
-          {data?.roleDesc || '-'}
+        <Descriptions.Item label="权限编码">
+          {data?.permissionCode || '-'}
         </Descriptions.Item>
         <Descriptions.Item label="创建时间">
           {data?.createdTime || '-'}
@@ -63,4 +60,4 @@ const RoleDetailModal: React.FC<RoleDetailModalProps> = ({ roleId, open, onClose
   );
 };
 
-export default RoleDetailModal;
+export default PermissionDetailModal;

@@ -1,22 +1,23 @@
-import { PageContainer } from '@ant-design/pro-components';
-import { history, useParams } from '@umijs/max';
-import { Card, Descriptions, message } from 'antd';
+import { Descriptions, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
-import type { DeptItem } from '@/services/dept';
-import { getDeptDetail } from '@/services/dept';
+import { App } from 'antd';
+import { getDeptDetail, type DeptItem } from '@/services/dept';
 
-const DeptDetailPage: React.FC = () => {
-  const { deptId } = useParams<{ deptId: string }>();
+export type DeptDetailModalProps = {
+  deptId: string;
+  open: boolean;
+  onClose: () => void;
+};
+
+const DeptDetailModal: React.FC<DeptDetailModalProps> = ({ deptId, open, onClose }) => {
   const [data, setData] = useState<DeptItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const { message } = App.useApp();
 
   useEffect(() => {
     const loadDetail = async () => {
-      if (!deptId) {
-        message.error('缺少机构ID');
-        setLoading(false);
-        return;
-      }
+      if (!deptId) return;
+      setLoading(true);
       try {
         const res = await getDeptDetail(deptId);
         if (res.code === 0 && res.data) {
@@ -34,38 +35,35 @@ const DeptDetailPage: React.FC = () => {
   }, [deptId]);
 
   return (
-    <PageContainer
-      header={{
-        title: '机构详情',
-        onBack: () => history.back(),
-      }}
+    <Modal
+      title="机构详情"
+      open={open}
+      footer={null}
+      confirmLoading={loading}
+      onCancel={onClose}
     >
-      <Card loading={loading}>
-        {data && (
-          <Descriptions column={1} bordered>
-            <Descriptions.Item label="机构名称">{data.deptName}</Descriptions.Item>
-            <Descriptions.Item label="机构编码">{data.deptCode || '-'}</Descriptions.Item>
-            <Descriptions.Item label="机构描述">
-              {data.deptDesc || '-'}
-            </Descriptions.Item>
-            <Descriptions.Item label="上级机构ID">
-              {data.parentDeptId || '-'}
-            </Descriptions.Item>
-            <Descriptions.Item label="顺序编号">
-              {data.sortNo ?? '-'}
-            </Descriptions.Item>
-            <Descriptions.Item label="创建时间">
-              {data.createdTime || '-'}
-            </Descriptions.Item>
-            <Descriptions.Item label="更新时间">
-              {data.updatedTime || '-'}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Card>
-    </PageContainer>
+      <Descriptions column={1} bordered size="small">
+        <Descriptions.Item label="机构名称">
+          {data?.deptName || '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="机构编码">
+          {data?.deptCode || '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="机构描述">
+          {data?.deptDesc || '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="顺序编号">
+          {data?.sortNo ?? '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="创建时间">
+          {data?.createdTime || '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="更新时间">
+          {data?.updatedTime || '-'}
+        </Descriptions.Item>
+      </Descriptions>
+    </Modal>
   );
 };
 
-export default DeptDetailPage;
-
+export default DeptDetailModal;

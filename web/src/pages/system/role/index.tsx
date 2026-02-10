@@ -1,59 +1,32 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  ModalForm,
   PageContainer,
-  ProFormText,
-  ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Descriptions, Modal, message, Popconfirm } from 'antd';
+import { App, Button, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type {
-  RoleForm,
   RoleItem,
   RolePageParams,
 } from '@/services/role';
 import {
   batchDeleteRoles,
-  createRole,
   deleteRole,
-  getRoleDetail,
   pageRoles,
-  updateRole,
 } from '@/services/role';
+import RoleDetailModal from './detail';
+import RoleCreateModal from './create';
+import RoleEditModal from './edit';
 
 const Roles: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [currentRow, setCurrentRow] = useState<RoleItem | undefined>();
+  const [currentId, setCurrentId] = useState<string | undefined>();
   const [selectedRows, setSelectedRows] = useState<RoleItem[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailRow, setDetailRow] = useState<RoleItem | undefined>();
-
-  const handleSubmit = async (values: RoleForm, isEdit: boolean) => {
-    const hide = message.loading(isEdit ? '正在保存角色信息' : '正在新增角色');
-    try {
-      if (isEdit && currentRow?.roleId) {
-        await updateRole(currentRow.roleId, values);
-      } else {
-        await createRole(values);
-      }
-      hide();
-      message.success(isEdit ? '保存成功' : '新增成功');
-      setCreateModalOpen(false);
-      setEditModalOpen(false);
-      setCurrentRow(undefined);
-      actionRef.current?.reload();
-      return true;
-    } catch (e) {
-      hide();
-      message.error(isEdit ? '保存失败，请稍后重试' : '新增失败，请稍后重试');
-      return false;
-    }
-  };
+  const { message } = App.useApp();
 
   const handleDelete = async (row: RoleItem) => {
     const hide = message.loading('正在删除角色');
@@ -86,21 +59,14 @@ const Roles: React.FC = () => {
     }
   };
 
-  const handleShowDetail = async (record: RoleItem) => {
+  const handleShowDetail = (roleId: string) => {
+    setCurrentId(roleId);
     setDetailModalOpen(true);
-    setDetailLoading(true);
-    try {
-      const res = await getRoleDetail(record.roleId);
-      if (res.code === 0 && res.data) {
-        setDetailRow(res.data);
-      } else {
-        message.error(res.msg || '加载角色详情失败');
-      }
-    } catch (e) {
-      message.error('加载角色详情失败，请稍后重试');
-    } finally {
-      setDetailLoading(false);
-    }
+  };
+
+  const handleShowEdit = (roleId: string) => {
+    setCurrentId(roleId);
+    setEditModalOpen(true);
   };
 
   const columns: ProColumns<RoleItem>[] = [
@@ -137,18 +103,13 @@ const Roles: React.FC = () => {
       render: (_, record) => [
         <a
           key="detail"
-          onClick={() => {
-            void handleShowDetail(record);
-          }}
+          onClick={() => handleShowDetail(record.roleId)}
         >
           详情
         </a>,
         <a
           key="edit"
-          onClick={() => {
-            setCurrentRow(record);
-            setEditModalOpen(true);
-          }}
+          onClick={() => handleShowEdit(record.roleId)}
         >
           编辑
         </a>,
@@ -178,7 +139,7 @@ const Roles: React.FC = () => {
             key="add"
             type="primary"
             onClick={() => {
-              setCurrentRow(undefined);
+              setCurrentId(undefined);
               setCreateModalOpen(true);
             }}
           >
@@ -217,92 +178,44 @@ const Roles: React.FC = () => {
         }}
       />
 
-      <Modal
-        title="角色详情"
-        open={detailModalOpen}
-        footer={null}
-        onCancel={() => {
-          setDetailModalOpen(false);
-          setDetailRow(undefined);
-        }}
-      >
-        <Descriptions column={1} bordered size="small" loading={detailLoading}>
-          <Descriptions.Item label="角色名称">
-            {detailRow?.roleName || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="角色编码">
-            {detailRow?.roleCode || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="角色描述">
-            {detailRow?.roleDesc || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {detailRow?.createdTime || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="更新时间">
-            {detailRow?.updatedTime || '-'}
-          </Descriptions.Item>
-        </Descriptions>
-      </Modal>
-
-      <ModalForm<RoleForm>
-        title="新建角色"
+      <RoleCreateModal
         open={createModalOpen}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => setCreateModalOpen(false),
+        onCancel={() => {
+          setCreateModalOpen(false);
         }}
-        onFinish={async (values) => {
-          return handleSubmit(values, false);
+        onSubmit={() => {
+          setCreateModalOpen(false);
+          actionRef.current?.reload();
         }}
-      >
-        <ProFormText
-          name="roleName"
-          label="角色名称"
-          rules={[{ required: true, message: '请输入角色名称' }]}
-        />
-        <ProFormText
-          name="roleCode"
-          label="角色编码"
-          rules={[{ required: true, message: '请输入角色编码' }]}
-        />
-        <ProFormTextArea name="roleDesc" label="角色描述" />
-      </ModalForm>
+      />
 
-      <ModalForm<RoleForm>
-        title="编辑角色"
-        open={editModalOpen}
-        initialValues={{
-          roleName: currentRow?.roleName,
-          roleCode: currentRow?.roleCode,
-          roleDesc: currentRow?.roleDesc,
-        }}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => {
+      {currentId && (
+        <RoleDetailModal
+          roleId={currentId}
+          open={detailModalOpen}
+          onClose={() => {
+            setDetailModalOpen(false);
+          }}
+        />
+      )}
+
+      {currentId && (
+        <RoleEditModal
+          roleId={currentId}
+          open={editModalOpen}
+          onCancel={() => {
             setEditModalOpen(false);
-            setCurrentRow(undefined);
-          },
-        }}
-        onFinish={async (values) => {
-          return handleSubmit(values, true);
-        }}
-      >
-        <ProFormText
-          name="roleName"
-          label="角色名称"
-          rules={[{ required: true, message: '请输入角色名称' }]}
+            setCurrentId(undefined);
+          }}
+          onSubmit={() => {
+            setEditModalOpen(false);
+            setCurrentId(undefined);
+            actionRef.current?.reload();
+          }}
         />
-        <ProFormText
-          name="roleCode"
-          label="角色编码"
-          rules={[{ required: true, message: '请输入角色编码' }]}
-        />
-        <ProFormTextArea name="roleDesc" label="角色描述" />
-      </ModalForm>
+      )}
     </PageContainer>
   );
 };
 
 export default Roles;
-

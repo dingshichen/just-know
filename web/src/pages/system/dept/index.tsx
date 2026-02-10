@@ -1,37 +1,29 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  ModalForm,
   PageContainer,
-  ProFormDigit,
-  ProFormText,
-  ProFormTextArea,
-  ProFormTreeSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Button, Descriptions, Form, Modal, Popconfirm } from 'antd';
+import { App, Button, Popconfirm } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-import type { DeptForm, DeptItem } from '@/services/dept';
+import type { DeptItem } from '@/services/dept';
 import {
   batchDeleteDepts,
-  createDept,
   deleteDept,
-  getDeptDetail,
   listDeptTree,
-  updateDept,
 } from '@/services/dept';
+import DeptDetailModal from './detail';
+import DeptCreateModal from './create';
+import DeptEditModal from './edit';
 
 const Dept: React.FC = () => {
   const actionRef = useRef<ActionType | undefined>(undefined);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [currentRow, setCurrentRow] = useState<DeptItem | undefined>();
+  const [currentId, setCurrentId] = useState<string | undefined>();
   const [selectedRows, setSelectedRows] = useState<DeptItem[]>([]);
   const [treeData, setTreeData] = useState<DeptItem[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailRow, setDetailRow] = useState<DeptItem | null>(null);
-  const [editForm] = Form.useForm<DeptForm>();
   const { message } = App.useApp();
 
   // 加载树形数据
@@ -47,38 +39,6 @@ const Dept: React.FC = () => {
       }
     } catch (e) {
       console.error('加载机构树失败', e);
-    }
-  };
-
-  // 将树形数据转换为选项格式
-  const convertTreeToOptions = (tree: DeptItem[]): any[] => {
-    return tree.map((item) => ({
-      title: item.deptName,
-      value: item.deptId,
-      children: item.children ? convertTreeToOptions(item.children) : undefined,
-    }));
-  };
-
-  const handleSubmit = async (values: DeptForm, isEdit: boolean) => {
-    const hide = message.loading(isEdit ? '正在保存机构信息' : '正在新增机构');
-    try {
-      if (isEdit && currentRow?.deptId) {
-        await updateDept(currentRow.deptId, values);
-      } else {
-        await createDept(values);
-      }
-      hide();
-      message.success(isEdit ? '保存成功' : '新增成功');
-      setCreateModalOpen(false);
-      setEditModalOpen(false);
-      setCurrentRow(undefined);
-      loadTreeData();
-      actionRef.current?.reload();
-      return true;
-    } catch (e) {
-      hide();
-      message.error(isEdit ? '保存失败，请稍后重试' : '新增失败，请稍后重试');
-      return false;
     }
   };
 
@@ -115,37 +75,15 @@ const Dept: React.FC = () => {
     }
   };
 
-  const handleShowDetail = async (row: DeptItem) => {
+  const handleShowDetail = (deptId: string) => {
+    setCurrentId(deptId);
     setDetailModalOpen(true);
-    setDetailLoading(true);
-    try {
-      const res = await getDeptDetail(row.deptId);
-      if (res.code === 0 && res.data) {
-        setDetailRow(res.data);
-      } else {
-        message.error(res.msg || '加载机构详情失败');
-      }
-    } catch (e) {
-      message.error('加载机构详情失败，请稍后重试');
-    } finally {
-      setDetailLoading(false);
-    }
   };
 
-  // 打开编辑弹窗时填充表单
-  useEffect(() => {
-    if (editModalOpen && currentRow) {
-      editForm.setFieldsValue({
-        deptName: currentRow.deptName,
-        deptCode: currentRow.deptCode,
-        deptDesc: currentRow.deptDesc,
-        parentDeptId: currentRow.parentDeptId,
-        sortNo: currentRow.sortNo ?? 0,
-      } as any);
-    } else {
-      editForm.resetFields();
-    }
-  }, [editModalOpen, currentRow, editForm]);
+  const handleShowEdit = (deptId: string) => {
+    setCurrentId(deptId);
+    setEditModalOpen(true);
+  };
 
   const columns: ProColumns<DeptItem>[] = [
     {
@@ -187,18 +125,13 @@ const Dept: React.FC = () => {
       render: (_, record) => [
         <a
           key="detail"
-          onClick={() => {
-            void handleShowDetail(record);
-          }}
+          onClick={() => handleShowDetail(record.deptId)}
         >
           详情
         </a>,
         <a
           key="edit"
-          onClick={() => {
-            setCurrentRow(record);
-            setEditModalOpen(true);
-          }}
+          onClick={() => handleShowEdit(record.deptId)}
         >
           编辑
         </a>,
@@ -228,7 +161,7 @@ const Dept: React.FC = () => {
             key="add"
             type="primary"
             onClick={() => {
-              setCurrentRow(undefined);
+              setCurrentId(undefined);
               setCreateModalOpen(true);
             }}
           >
@@ -267,126 +200,46 @@ const Dept: React.FC = () => {
         childrenColumnName="children"
       />
 
-      <Modal
-        title="机构详情"
-        open={detailModalOpen}
-        footer={null}
-        confirmLoading={detailLoading}
-        onCancel={() => {
-          setDetailModalOpen(false);
-          setDetailRow(null);
-        }}
-      >
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="机构名称">
-            {detailRow?.deptName || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="机构编码">
-            {detailRow?.deptCode || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="机构描述">
-            {detailRow?.deptDesc || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="上级机构ID">
-            {detailRow?.parentDeptId || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="顺序编号">
-            {detailRow?.sortNo ?? '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {detailRow?.createdTime || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="更新时间">
-            {detailRow?.updatedTime || '-'}
-          </Descriptions.Item>
-        </Descriptions>
-      </Modal>
-
-      <ModalForm<DeptForm>
-        title="新建机构"
+      <DeptCreateModal
         open={createModalOpen}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => setCreateModalOpen(false),
+        treeData={treeData}
+        onCancel={() => {
+          setCreateModalOpen(false);
         }}
-        onFinish={async (values) => {
-          return handleSubmit(values, false);
+        onSubmit={() => {
+          setCreateModalOpen(false);
+          loadTreeData();
+          actionRef.current?.reload();
         }}
-      >
-        <ProFormText
-          name="deptName"
-          label="机构名称"
-          rules={[{ required: true, message: '请输入机构名称' }]}
-        />
-        <ProFormText name="deptCode" label="机构编码" />
-        <ProFormDigit
-          name="sortNo"
-          label="顺序编号"
-          rules={[{ required: true, message: '请输入顺序编号' }]}
-          fieldProps={{
-            min: 0,
-            precision: 0,
-          }}
-          initialValue={0}
-        />
-        <ProFormTextArea name="deptDesc" label="机构描述" />
-        <ProFormTreeSelect
-          name="parentDeptId"
-          label="上级机构"
-          placeholder="请选择上级机构"
-          fieldProps={{
-            treeData: convertTreeToOptions(treeData),
-            allowClear: true,
-            treeDefaultExpandAll: true,
-          }}
-        />
-      </ModalForm>
+      />
 
-      <ModalForm<DeptForm>
-        title="编辑机构"
-        open={editModalOpen}
-        form={editForm}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => {
+      {currentId && (
+        <DeptDetailModal
+          deptId={currentId}
+          open={detailModalOpen}
+          onClose={() => {
+            setDetailModalOpen(false);
+          }}
+        />
+      )}
+
+      {currentId && (
+        <DeptEditModal
+          deptId={currentId}
+          open={editModalOpen}
+          treeData={treeData}
+          onCancel={() => {
             setEditModalOpen(false);
-            setCurrentRow(undefined);
-            editForm.resetFields();
-          },
-        }}
-        onFinish={async (values) => {
-          return handleSubmit(values, true);
-        }}
-      >
-        <ProFormText
-          name="deptName"
-          label="机构名称"
-          rules={[{ required: true, message: '请输入机构名称' }]}
-        />
-        <ProFormText name="deptCode" label="机构编码" />
-        <ProFormDigit
-          name="sortNo"
-          label="顺序编号"
-          rules={[{ required: true, message: '请输入顺序编号' }]}
-          fieldProps={{
-            min: 0,
-            precision: 0,
+            setCurrentId(undefined);
+          }}
+          onSubmit={() => {
+            setEditModalOpen(false);
+            setCurrentId(undefined);
+            loadTreeData();
+            actionRef.current?.reload();
           }}
         />
-        <ProFormTextArea name="deptDesc" label="机构描述" />
-        <ProFormTreeSelect
-          name="parentDeptId"
-          label="上级机构"
-          placeholder="请选择上级机构"
-          fieldProps={{
-            treeData: convertTreeToOptions(
-              treeData.filter((item) => item.deptId !== currentRow?.deptId),
-            ),
-            allowClear: true,
-            treeDefaultExpandAll: true,
-          }}
-        />
-      </ModalForm>
+      )}
     </PageContainer>
   );
 };
