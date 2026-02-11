@@ -1,9 +1,10 @@
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
-import { App, Avatar, Form, Input, Modal, Select, Upload } from 'antd';
+import { App, Avatar, Button, Form, Input, Modal, Select, Upload } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getUserDetail, updateUser, UserDetail, type UserForm } from '@/services/user';
 import { uploadAttach } from '@/services/attach';
 import { AttachOption } from '@/services/attach';
+import ImgCrop from 'antd-img-crop';
 
 export type PersonalSettingsModalProps = {
   open: boolean;
@@ -13,7 +14,7 @@ export type PersonalSettingsModalProps = {
 };
 
 const getAvatarUrl = (attachId: string | number) =>
-  `/api/attach/download/${attachId}`;
+  `/api/attach/download/${attachId}?token=${localStorage.getItem('jk-token')}`;
 
 /** 从多种格式解析头像展示 URL（含 mock 的 avatarUrl） */
 const getDisplayAvatarUrl = (
@@ -75,12 +76,12 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
     }
   }, [open, userId, form, message]);
 
-  const handleAvatarUpload = async (file: File) => {
+  const handleAvatarUpload = async (options: any) => {
     try {
-      const res = await uploadAttach(file);
+      const res = await uploadAttach(options.file as any);
       if (res.code !== 0 || !res.data) {
         message.error(res.msg || '上传头像失败，请稍后重试');
-        return false;
+        return;
       }
       const attach = res.data;
       const attachId = attach.attachId?.toString?.() ?? attach.attachId;
@@ -90,7 +91,6 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
     } catch {
       message.error('上传头像失败，请稍后重试');
     }
-    return false;
   };
 
   const handleSubmit = async () => {
@@ -153,30 +153,21 @@ const PersonalSettingsModal: React.FC<PersonalSettingsModalProps> = ({
           </Form.Item>
 
           <Form.Item label="头像">
-            <Upload
-              showUploadList={false}
-              beforeUpload={(file) => handleAvatarUpload(file as File)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                {displayAvatarUrl ? (
-                  <img
-                    src={displayAvatarUrl}
-                    alt="头像"
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                ) : (
-                  <Avatar size={64} icon={<UserOutlined />} />
-                )}
-                <span style={{ color: '#666' }}>
-                  <UploadOutlined /> 点击更换头像
-                </span>
-              </div>
-            </Upload>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {displayAvatarUrl ? (
+                <Avatar src={displayAvatarUrl} size={64} />
+              ) : (
+                <Avatar size={64} icon={<UserOutlined />} />
+              )}
+              <ImgCrop cropShape="round">
+                <Upload
+                  showUploadList={false}
+                  customRequest={(options) => handleAvatarUpload(options)}
+                >
+                  <Button icon={<UploadOutlined />}>更换头像</Button>
+                </Upload>
+              </ImgCrop>
+            </div>
           </Form.Item>
 
           <Form.Item label="用户姓名">

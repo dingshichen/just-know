@@ -42,6 +42,7 @@
         <result column="account" property="account" jdbcType="VARCHAR"/>
         <result column="password" property="password" jdbcType="VARCHAR"/>
         <result column="locked_flag" property="isLockFlag" jdbcType="TINYINT"/>
+        <result column="avatar_attach_id" property="avatarAttachId" jdbcType="BIGINT"/>
     </resultMap>
 
     <!-- Select list with conditions -->
@@ -90,7 +91,8 @@
             u.user_name,
             u.account,
             uc.password,
-            u.locked_flag
+            u.locked_flag,
+            u.avatar_attach_id
         FROM user u
         INNER JOIN user_credential uc ON u.user_id = uc.user_id
         WHERE u.account = #{account}
@@ -103,7 +105,8 @@
             user_id,
             user_name,
             account,
-            locked_flag
+            locked_flag,
+            avatar_attach_id
         FROM user
         WHERE user_id = #{userId}
         LIMIT 1

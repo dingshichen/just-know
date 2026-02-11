@@ -66,15 +66,13 @@ export const layout: RunTimeLayoutConfig = ({
   return {
     actionsRender: undefined,
     avatarProps: {
-      src: initialState?.currentUser?.avatar,
+      src: initialState?.currentUser?.avatarAttachId
+        ? `/api/attach/download/${initialState.currentUser.avatarAttachId}?token=${localStorage.getItem('jk-token')}`
+        : undefined,
       icon: <UserOutlined />,
       title: <AvatarName />,
       render: (_, avatarChildren) => {
-        const hasAvatar = !!initialState?.currentUser?.avatar;
-        const displayName =
-          initialState?.currentUser?.userName ||
-          initialState?.currentUser?.account ||
-          '用户';
+        const hasAvatar = !!initialState?.currentUser?.avatarAttachId;
         const content = hasAvatar ? (
           avatarChildren
         ) : (
@@ -91,16 +89,6 @@ export const layout: RunTimeLayoutConfig = ({
               }}
             >
               {content}
-              <span
-                style={{
-                  maxWidth: 140,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {displayName}
-              </span>
             </span>
           </AvatarDropdown>
         );

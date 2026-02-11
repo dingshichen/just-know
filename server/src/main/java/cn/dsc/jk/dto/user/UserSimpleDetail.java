@@ -36,9 +36,9 @@ public class UserSimpleDetail implements UserDetails {
     private String account;
 
     /**
-     * 头像 URL（可选，用于前端展示）
+     * 头像附件ID
      */
-    private String avatar;
+    private Long avatarAttachId;
 
     /**
      * 密码（不序列化到 API 响应）

@@ -110,8 +110,7 @@ export default {
       msg: '请求成功',
       data: {
         userName: 'Serati Ma',
-        avatar:
-          'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
+        avatarAttachId: '1',
         userId: 1,
         account: 'admin',
         isLockFlag: false,

@@ -6,7 +6,8 @@ declare namespace API {
   type CurrentUser = {
     /** 用户姓名 */
     userName?: string;
-    avatar?: string;
+    /** 头像附件ID */
+    avatarAttachId?: string;
     /** 用户ID */
     userId?: number;
     /** 用户账号 */

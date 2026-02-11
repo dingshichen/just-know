@@ -83,12 +83,15 @@ public class UserController {
 
     /**
      * 获取当前登录用户简单信息
+     * 从数据库重新加载，确保头像等信息为最新
      *
      * @return 当前用户的 UserSimpleDetail
      */
     @GetMapping("/current")
     public Result<UserSimpleDetail> current() {
-        return Result.success(SecurityContextUtil.getUser());
+        Long userId = SecurityContextUtil.getUserId();
+        UserSimpleDetail detail = userService.loadSimpleDetail(userId);
+        return Result.success(detail);
     }
 
     /**
