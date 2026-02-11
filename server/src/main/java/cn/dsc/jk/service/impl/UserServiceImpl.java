@@ -202,6 +202,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         userRoleRelService.deleteByUserId(userId);
         // 删除用户部门关系
         userDeptRelService.deleteByUserId(userId);
+        // 删除用户凭证
+        userCredentialService.removeById(userId);
         // 删除用户
         this.removeById(userId);
     }
@@ -228,6 +230,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         for (Long userId : userIds) {
             userDeptRelService.deleteByUserId(userId);
         }
+        // 批量删除用户凭证
+        userCredentialService.removeBatchByIds(userIds);
         // 批量删除用户
         this.removeBatchByIds(userIds);
     }
