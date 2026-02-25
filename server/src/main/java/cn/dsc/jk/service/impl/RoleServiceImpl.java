@@ -10,9 +10,11 @@ import cn.dsc.jk.dto.role.RoleUpdate;
 import cn.dsc.jk.entity.RoleEntity;
 import cn.dsc.jk.mapper.RoleMapper;
 import cn.dsc.jk.service.RoleService;
+import cn.dsc.jk.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> implements RoleService {
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<RoleOption> selectByIds(List<Long> ids) {
@@ -75,7 +80,14 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, RoleEntity> impleme
 
     @Override
     public RoleDetail load(Long roleId) {
-        return RoleConvert.FU_TO_DETAIL.apply(this.getById(roleId));
+        RoleEntity entity = this.getById(roleId);
+        if (entity == null) {
+            return null;
+        }
+        RoleDetail detail = RoleConvert.FU_TO_DETAIL.apply(entity);
+        detail.setCreatedUser(userService.selectById(entity.getCreatedUserId()));
+        detail.setUpdatedUser(userService.selectById(entity.getUpdatedUserId()));
+        return detail;
     }
 
     @Override

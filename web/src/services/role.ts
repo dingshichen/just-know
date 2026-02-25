@@ -1,6 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
+import { UserOption } from './user';
 
 /**
  * 角色选项
@@ -23,6 +24,15 @@ export class RoleItem extends RoleOption {
   roleDesc?: string;
   createdTime?: string;
   updatedTime?: string;
+}
+
+/**
+ * 角色详情
+ * 对应后端的 RoleDetail DTO
+ */
+export class RoleDetail extends RoleItem {
+  createdUser?: UserOption;
+  updatedUser?: UserOption;
 }
 
 /**
@@ -120,7 +130,7 @@ export async function deleteRole(roleId: string) {
  * GET /api/role/{roleId}
  */
 export async function getRoleDetail(roleId: string) {
-  return request<Result<RoleItem>>(`/api/role/${roleId}`, {
+  return request<Result<RoleDetail>>(`/api/role/${roleId}`, {
     method: 'GET',
   });
 }

@@ -1,5 +1,6 @@
 package cn.dsc.jk.dto.role;
 
+import cn.dsc.jk.dto.user.UserOption;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,12 +14,12 @@ import lombok.EqualsAndHashCode;
 public class RoleDetail extends RoleItem {
 
     /**
-     * 创建用户ID
+     * 创建用户
      */
-    private Long createdUserId;
+    private UserOption createdUser;
 
     /**
-     * 更新用户ID
+     * 更新用户
      */
-    private Long updatedUserId;
+    private UserOption updatedUser;
 }
